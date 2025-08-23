@@ -1,0 +1,14 @@
+{
+    "name": "C & CMake Development",
+    "image": "mcr.microsoft.com/devcontainers/cpp:latest",
+    "postCreateCommand": "",
+    "remoteUser": "vscode",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools"
+            ]
+        }
+    }
+}
