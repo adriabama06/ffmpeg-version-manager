@@ -1,3 +1,7 @@
+# Custom
+build
+ffmpeg-version-manager*
+
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
