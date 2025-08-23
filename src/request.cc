@@ -16,13 +16,10 @@ using namespace std;
 vector<FFMPEG_VERSION> get_ffmpeg_versions()
 {
     ifstream file("ffmpeg-list.json");
-
-    file.seekg(0, std::ios::end);
-    size_t size = file.tellg();
-    file.seekg(0);
     
-    std::string content(size, '\0');
-    file.read(&content[0], size); 
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    file.close();
 
     nlohmann::json json = nlohmann::json::parse(content);
 
@@ -30,22 +27,25 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
 
     nlohmann::json versions = json["versions"];
 
-    vector<FFMPEG_VERSION> list = vector<FFMPEG_VERSION>(versions.size());
+    vector<FFMPEG_VERSION> raw_list;
 
-    // versions.items() is sorted, so to reverse start from the end
-    size_t i = versions.size() - 1;
     for (auto& [key, value] : versions.items())
     {
-        if(!value.contains(OS) || !value[OS].is_string())
-        {
-            list[i--] = FFMPEG_VERSION{version: "", url: ""};
-            continue;
-        }
+        if(!value.contains(OS) || !value[OS].is_string()) continue;
 
         string url = value[OS];
 
-        list[i--] = FFMPEG_VERSION{version: key, url: url};
+        raw_list.push_back(FFMPEG_VERSION{version: key, url: url});
     }
 
+    // versions.items() & raw_list is sorted, so to reverse start from the end
+    vector<FFMPEG_VERSION> list(raw_list.size());
+
+    for (size_t i = 0; i < raw_list.size(); i++)
+    {
+        list[raw_list.size() - i - 1] = raw_list[i];
+    }
+    
+    
     return list;
 }

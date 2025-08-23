@@ -40,6 +40,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 add_executable(ffmpeg-version-manager
   src/main.cc
   src/request.cc
+  src/environment.cc
 )
 target_include_directories(ffmpeg-version-manager PRIVATE src)
 
