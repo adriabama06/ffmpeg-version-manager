@@ -15,10 +15,77 @@ namespace fs = std::filesystem;
 #define HOME "HOME"
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+
+int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
+    HKEY hKey;
+    LONG lResult;
+    DWORD dwType = REG_EXPAND_SZ;
+    DWORD dwSize = 0;
+    string currentPath;
+
+    // Open environment key
+    lResult = RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_READ | KEY_WRITE, &hKey);
+    if (lResult != ERROR_SUCCESS) {
+        cerr << "Error: Could not open environment registry key" << endl;
+        return 1;
+    }
+
+    // Get current PATH value
+    lResult = RegQueryValueExA(hKey, "Path", NULL, &dwType, NULL, &dwSize);
+    if (lResult == ERROR_SUCCESS) {
+        vector<char> buffer(dwSize);
+        lResult = RegQueryValueExA(hKey, "Path", NULL, &dwType, (LPBYTE)buffer.data(), &dwSize);
+        if (lResult == ERROR_SUCCESS) {
+            currentPath = string(buffer.data(), dwSize - 1); // Remove null terminator
+        }
+    }
+
+    // Modify PATH
+    string newPath;
+    string dir_str = ffmpeg_vm_dir.string();
+
+    if (add) {
+        if (currentPath.find(dir_str) != string::npos) {
+            cout << "ffmpeg-vm already in PATH" << endl;
+            RegCloseKey(hKey);
+            return 0;
+        }
+        newPath = dir_str + ";" + currentPath;
+    } else {
+        size_t pos = currentPath.find(dir_str);
+        if (pos == string::npos) {
+            cout << "ffmpeg-vm not found in PATH" << endl;
+            RegCloseKey(hKey);
+            return 0;
+        }
+        newPath = currentPath;
+        newPath.erase(pos, dir_str.length() + 1); // +1 to remove the semicolon
+    }
+
+    // Set new PATH value
+    lResult = RegSetValueExA(hKey, "Path", 0, REG_EXPAND_SZ, 
+                            (const BYTE*)newPath.c_str(), newPath.length() + 1);
+    if (lResult != ERROR_SUCCESS) {
+        cerr << "Error: Could not set PATH value" << endl;
+        RegCloseKey(hKey);
+        return 1;
+    }
+
+    RegCloseKey(hKey);
+
+    // Notify system about environment change
+    SendMessageTimeoutA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 
+                       (LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+
+    return 0;
+}
+#endif
+
 int setup_env()
 {
     const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
-
     const char* home = getenv(HOME);
 
     if (home == NULL) {
@@ -35,6 +102,9 @@ int setup_env()
         }
     }
 
+#ifdef _WIN32
+    return update_windows_path(ffmpeg_vm_dir, true);
+#else
     fs::path bashrc_path = fs::path(home) / ".bashrc";
     ifstream bashrc_in(bashrc_path);
     if (!bashrc_in.is_open()) {
@@ -43,7 +113,6 @@ int setup_env()
     }
 
     string content((istreambuf_iterator<char>(bashrc_in)), istreambuf_iterator<char>());
-
     bashrc_in.close();
 
     const string start_marker = "# --- ffmpeg-vm start ---";
@@ -57,19 +126,19 @@ int setup_env()
 
     ofstream bashrc_out(bashrc_path, ios_base::app);
     if (!bashrc_out.is_open()) {
-        std::cerr << "Error: Could not open " << bashrc_path << " for writing." << std::endl;
+        cerr << "Error: Could not open " << bashrc_path << " for writing." << endl;
         return 5;
     }
     bashrc_out << "\n" << new_section << "\n";
     bashrc_out.close();
 
     return 0;
+#endif
 }
 
 int remove_env()
 {
     const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
-
     const char* home = getenv(HOME);
 
     if (home == NULL) {
@@ -81,11 +150,13 @@ int remove_env()
 
     if (fs::exists(ffmpeg_vm_dir)) {
         if (!fs::remove_all(ffmpeg_vm_dir)) {
-            std::cerr << "Error: Could not remove directory " << ffmpeg_vm_dir << std::endl;
+            cerr << "Error: Could not remove directory " << ffmpeg_vm_dir << endl;
         }
     }
 
-    // Update .bashrc
+#ifdef _WIN32
+    return update_windows_path(ffmpeg_vm_dir, false);
+#else
     fs::path bashrc_path = fs::path(home) / ".bashrc";
     ifstream bashrc_in(bashrc_path);
     if (!bashrc_in.is_open()) {
@@ -129,4 +200,5 @@ int remove_env()
     bashrc_out.close();
 
     return 0;
+#endif
 }
