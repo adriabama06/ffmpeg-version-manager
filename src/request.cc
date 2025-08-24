@@ -154,8 +154,6 @@ int extract(const string &filedata, const fs::path &destination_dir)
 
         const fs::path full_dest_path = destination_dir / entry_path;
 
-        cout << full_dest_path << endl;
-
         /*
             The first entry is the root folder
             because we want all in ffmpeg-vm/... and not in ffmpeg-vm/something/..., we check this path to remove
@@ -185,8 +183,6 @@ int extract(const string &filedata, const fs::path &destination_dir)
         if (archive_entry_filetype(entry) == AE_IFLNK)
         {
             const char* link_target_cstr = archive_entry_symlink(entry);
-
-            std::cout << link_target_cstr << endl;
 
             if (link_target_cstr) {
                 // fs::create_symlink can fail if the link exist

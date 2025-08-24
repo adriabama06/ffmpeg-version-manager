@@ -1,6 +1,7 @@
 #include <memory> // for allocator, __shared_ptr_access, shared_ptr
 #include <string> // for string, basic_string
 #include <vector> // for vector
+#include <filesystem>
 
 #include "ftxui/component/captured_mouse.hpp"     // for ftxui
 #include "ftxui/component/component.hpp"          // for Radiobox, Horizontal, Menu, Renderer, Tab
@@ -18,10 +19,10 @@ int main()
 {
     // Fetch versions
     std::cout << "Fetching versions..." << std::flush;
-    
+
     // TODO: Fetch data
     std::vector<FFMPEG_VERSION> versions = get_ffmpeg_versions();
-    
+
     // Remove the "Fetching versions..." line from console
     std::cout << "\r" << std::string(20, ' ') << "\r" << std::flush;
 
@@ -47,18 +48,28 @@ int main()
     int version_selected = 0;
 
     MenuOption version_selector_options;
-    version_selector_options.on_enter = [&] {
+    version_selector_options.on_enter = [&]
+    {
         FFMPEG_VERSION version = versions[version_selected];
+
+        remove_env();
+
+        setup_env();
+
+        std::filesystem::path downloaddir = get_ffmpeg_vm_dir();
+
+        const std::string fdata = download_file(version.url);
+
+        extract(fdata, downloaddir);
     };
 
     ftxui::Component version_selector_component = Menu(&display_versions, &version_selected, version_selector_options);
 
     ftxui::Component list_container_component = Container::Tab(
-        {
-            version_selector_component | vscroll_indicator | frame | size(HEIGHT, LESS_THAN, 10),
-            Button("Let's uninstall", [] { std::cout << "Uninstall pressed" << std:: endl; }, ButtonOption::Ascii()),
-            Button("Ok, exit", screen.ExitLoopClosure(), ButtonOption::Ascii())
-        },
+        {version_selector_component | vscroll_indicator | frame | size(HEIGHT, LESS_THAN, 10),
+         Button("Let's uninstall", []
+                { remove_env(); }, ButtonOption::Ascii()),
+         Button("Ok, exit", screen.ExitLoopClosure(), ButtonOption::Ascii())},
         &menu_selected);
 
     ftxui::Component container = Container::Horizontal({
@@ -69,7 +80,8 @@ int main()
     // Add a separator and a border
     ftxui::Component renderer = Renderer(
         container,
-        [&] {
+        [&]
+        {
             return hbox({
                        menus_component->Render(),
                        separator(),
