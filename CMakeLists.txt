@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.22)
 
 project(ffmpeg-version-manager
-  LANGUAGES CXX
+  LANGUAGES C CXX
   VERSION 1.0.0
 )
 
@@ -54,7 +54,7 @@ FetchContent_Declare(curl
 FetchContent_MakeAvailable(curl)
 # ---
 
-# --- Fetch zlib (required for libarchive ZIP support)
+# --- Fetch zlib (required for ZIP, GZ support)
 FetchContent_Declare(zlib
   GIT_REPOSITORY https://github.com/madler/zlib.git
   GIT_TAG        v1.3.1
@@ -70,10 +70,41 @@ set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
 set(ZLIB_LIBRARY zlibstatic)
 # ---
 
-# --- Fetch libarchive
+# --- Fetch bzip2 (required for BZ2 support, also used in some 7z files) + (using a CMake-friendly fork)
+FetchContent_Declare(bzip2
+  GIT_REPOSITORY https://github.com/commontk/bzip2.git
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(bzip2)
+
+# Make sure libarchive finds our bzip2
+set(BZIP2_LIBRARIES libbz2)
+set(BZIP2_INCLUDE_DIR ${bzip2_SOURCE_DIR})
+# ---
+
+# --- Fetch xz/lzma (required for XZ, LZMA support, also used in 7z files)
+FetchContent_Declare(xz
+  GIT_REPOSITORY https://github.com/tukaani-project/xz.git
+  GIT_TAG        v5.6.2
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(xz)
+
+# Make sure libarchive finds our xz/lzma
+set(LIBLZMA_LIBRARY liblzma)
+set(LIBLZMA_INCLUDE_DIR ${xz_SOURCE_DIR}/src/liblzma/api)
+# ---
+
+# --- Fetch libarchive with full compression support
 set(ENABLE_TEST OFF CACHE BOOL "Disable libarchive tests")
 set(ENABLE_INSTALL OFF CACHE BOOL "Disable libarchive install")
-set(ENABLE_ZLIB ON CACHE BOOL "Enable zlib support in libarchive")
+set(ENABLE_ZLIB ON CACHE BOOL "Enable zlib support (ZIP, GZ)")
+set(ENABLE_BZip2 ON CACHE BOOL "Enable bzip2 support (BZ2, some 7z)")
+set(ENABLE_LZMA ON CACHE BOOL "Enable LZMA support (XZ, LZMA, some 7z)")
 
 FetchContent_Declare(archive
   GIT_REPOSITORY https://github.com/libarchive/libarchive.git
@@ -103,6 +134,9 @@ target_link_libraries(ffmpeg-version-manager
   PRIVATE nlohmann_json::nlohmann_json
   PRIVATE libcurl
   PRIVATE archive_static
+  PRIVATE zlibstatic      # For ZIP, GZ support
+  PRIVATE libbz2          # For BZ2 support (and some 7z files)
+  PRIVATE liblzma         # For XZ, LZMA support (and some 7z files)
 )
 
 # Additional static linking for Windows
