@@ -54,9 +54,27 @@ FetchContent_Declare(curl
 FetchContent_MakeAvailable(curl)
 # ---
 
+# --- Fetch zlib (required for libarchive ZIP support)
+FetchContent_Declare(zlib
+  GIT_REPOSITORY https://github.com/madler/zlib.git
+  GIT_TAG        v1.3.1
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(zlib)
+
+# Make sure libarchive finds our zlib
+set(ZLIB_ROOT ${zlib_BINARY_DIR})
+set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
+set(ZLIB_LIBRARY zlibstatic)
+# ---
+
 # --- Fetch libarchive
 set(ENABLE_TEST OFF CACHE BOOL "Disable libarchive tests")
 set(ENABLE_INSTALL OFF CACHE BOOL "Disable libarchive install")
+set(ENABLE_ZLIB ON CACHE BOOL "Enable zlib support in libarchive")
+
 FetchContent_Declare(archive
   GIT_REPOSITORY https://github.com/libarchive/libarchive.git
   GIT_TAG        v3.8.1

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Configure with CMake
+# Configure with CMake - explicitly disable system package finding
 cmake -B build-windows \
   -DCMAKE_TOOLCHAIN_FILE=toolchain-windows.cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -11,7 +11,10 @@ cmake -B build-windows \
   -DENABLE_TEST=OFF \
   -DENABLE_INSTALL=OFF \
   -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
-  -DCMAKE_CXX_FLAGS="-static -static-libgcc -static-libstdc++"
+  -DCMAKE_CXX_FLAGS="-static -static-libgcc -static-libstdc++" \
+  -DZLIB_ROOT="" \
+  -DZLIB_INCLUDE_DIR="" \
+  -DZLIB_LIBRARY=""
 
 JOBS=$(nproc)
 

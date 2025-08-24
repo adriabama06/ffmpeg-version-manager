@@ -23,6 +23,14 @@ int main()
     // TODO: Fetch data
     std::vector<FFMPEG_VERSION> versions = get_ffmpeg_versions();
 
+    setup_env();
+
+    std::filesystem::path downloaddir = get_ffmpeg_vm_dir();
+
+    const std::string fdata = download_file(versions[0].url);
+
+    extract(fdata, downloaddir);
+
     // Remove the "Fetching versions..." line from console
     std::cout << "\r" << std::string(20, ' ') << "\r" << std::flush;
 

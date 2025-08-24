@@ -94,6 +94,8 @@ fs::path get_ffmpeg_vm_dir()
         return "";
     }
 
+    std::cout << home << " " << HOME << std::endl;
+
     fs::path ffmpeg_vm_dir = fs::path(user_ffmpeg_path != NULL ? user_ffmpeg_path : home) / "ffmpeg-vm";
 
     if (!fs::exists(ffmpeg_vm_dir)) {
