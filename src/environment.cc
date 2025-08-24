@@ -83,7 +83,7 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
 }
 #endif
 
-fs::path get_ffmpeg_vm()
+fs::path get_ffmpeg_vm_dir()
 {
     const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
     const char* home = getenv(HOME);

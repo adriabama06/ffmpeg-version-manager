@@ -5,6 +5,6 @@
 
 int setup_env();
 int remove_env();
-std::filesystem::path get_ffmpeg_vm();
+std::filesystem::path get_ffmpeg_vm_dir();
 
 #endif // ENVIRONMENT_H
