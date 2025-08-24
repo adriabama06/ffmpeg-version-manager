@@ -37,15 +37,8 @@ FetchContent_Declare(nlohmann_json
 FetchContent_MakeAvailable(nlohmann_json)
 # ---
 
-# --- Fetch curlpp
-FetchContent_Declare(curlpp
-  GIT_REPOSITORY https://github.com/jpbarrette/curlpp.git
-  GIT_TAG        v0.8.1
-  GIT_PROGRESS   TRUE
-  GIT_SHALLOW    TRUE
-  EXCLUDE_FROM_ALL
-)
-FetchContent_MakeAvailable(curlpp)
+# --- Find libcurl
+find_package(CURL REQUIRED)
 # ---
 
 # --- Fetch libarchive
@@ -68,7 +61,6 @@ add_executable(ffmpeg-version-manager
 
 target_include_directories(ffmpeg-version-manager
   PRIVATE src
-  PRIVATE ${curlpp_SOURCE_DIR}/include
 )
 
 target_link_libraries(ffmpeg-version-manager
@@ -76,6 +68,6 @@ target_link_libraries(ffmpeg-version-manager
   PRIVATE ftxui::dom
   PRIVATE ftxui::component  # Not needed for this example.
   PRIVATE nlohmann_json::nlohmann_json
-  PRIVATE curlpp
+  PRIVATE CURL::libcurl
   PRIVATE archive
 )

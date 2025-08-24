@@ -6,10 +6,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <memory>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
+#include <curl/curl.h>
 
 #include <nlohmann/json.hpp>
 
@@ -27,37 +27,46 @@ namespace fs = std::filesystem;
 
 #define FFMPEG_LIST_URL "https://raw.githubusercontent.com/adriabama06/ffmpeg-version-manager/refs/heads/main/ffmpeg-list.json"
 
+// Callback function to write curl response to a string
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *response)
+{
+    size_t totalSize = size * nmemb;
+    response->append((char*)contents, totalSize);
+    return totalSize;
+}
+
 vector<FFMPEG_VERSION> get_ffmpeg_versions()
 {
-    curlpp::Cleanup myCleanup;
-    ostringstream os;
+    CURL *curl;
+    CURLcode res;
+    string response;
 
-    try
-    {
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(FFMPEG_LIST_URL));
-        request.setOpt(curlpp::options::WriteStream(&os));
-        request.setOpt(curlpp::options::FollowLocation(true));
-        request.perform();
-    }
-    catch (curlpp::RuntimeError &e)
-    {
-        cerr << e.what() << endl;
-        return {};
-    }
-    catch (curlpp::LogicError &e)
-    {
-        cerr << e.what() << endl;
+    curl = curl_easy_init();
+    if (!curl) {
+        cerr << "Failed to initialize curl" << endl;
         return {};
     }
 
-    string content = os.str();
+    curl_easy_setopt(curl, CURLOPT_URL, FFMPEG_LIST_URL);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+    res = curl_easy_perform(curl);
+    
+    if (res != CURLE_OK) {
+        cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+        curl_easy_cleanup(curl);
+        return {};
+    }
+
+    curl_easy_cleanup(curl);
 
     // Error on request
-    if (content.empty())
+    if (response.empty())
         return {};
 
-    nlohmann::json json = nlohmann::json::parse(content);
+    nlohmann::json json = nlohmann::json::parse(response);
 
     if (!json.contains("versions") || !json["versions"].is_object())
         return {};
@@ -90,29 +99,31 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
 string download_file(string url)
 {
     // TODO: Add download progress: https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
-    curlpp::Cleanup myCleanup;
-    ostringstream os;
+    CURL *curl;
+    CURLcode res;
+    string response;
 
-    try
-    {
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(url));
-        request.setOpt(curlpp::options::WriteStream(&os));
-        request.setOpt(curlpp::options::FollowLocation(true));
-        request.perform();
-    }
-    catch (curlpp::RuntimeError &e)
-    {
-        cerr << e.what() << endl;
-        return "";
-    }
-    catch (curlpp::LogicError &e)
-    {
-        cerr << e.what() << endl;
+    curl = curl_easy_init();
+    if (!curl) {
+        cerr << "Failed to initialize curl" << endl;
         return "";
     }
 
-    return os.str();
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+    res = curl_easy_perform(curl);
+    
+    if (res != CURLE_OK) {
+        cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+        curl_easy_cleanup(curl);
+        return "";
+    }
+
+    curl_easy_cleanup(curl);
+    return response;
 }
 
 int extract(const string &filedata, const fs::path &destination_dir)
