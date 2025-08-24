@@ -48,6 +48,14 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
     std::string dir_str = (ffmpeg_vm_dir / "bin").string();
 
     if (add) {
+        lResult = RegSetValueExA(hKey, "FFMPEGVM_PATH", 0, REG_EXPAND_SZ, 
+                            (const BYTE*)ffmpeg_vm_dir.string().c_str(), ffmpeg_vm_dir.string().length() + 1);
+        if(lResult == ERROR_SUCCESS)
+        {
+            SendMessageTimeoutA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 
+                       (LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+        }
+
         if (currentPath.find(dir_str) != std::string::npos) {
             std::cout << "ffmpeg-vm already in PATH" << std::endl;
             RegCloseKey(hKey);
@@ -55,6 +63,13 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
         }
         newPath = dir_str + ";" + currentPath;
     } else {
+        lResult = RegDeleteValueA(hKey, "FFMPEGVM_PATH");
+        if(lResult == ERROR_SUCCESS)
+        {
+            SendMessageTimeoutA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 
+                       (LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+        }
+
         size_t pos = currentPath.find(dir_str);
         if (pos == std::string::npos) {
             std::cout << "ffmpeg-vm not found in PATH" << std::endl;
@@ -140,7 +155,10 @@ int setup_env()
 
     const std::string start_marker = "# --- ffmpeg-vm start ---";
     const std::string end_marker = "# --- ffmpeg-vm end ---";
-    const std::string new_section = start_marker + "\nexport PATH=\"" + (ffmpeg_vm_dir / "bin").string() + ":" + (ffmpeg_vm_dir / "lib").string() + ":$PATH\"\n" + end_marker;
+    const std::string new_section = start_marker
+        + "\nexport PATH=\"" + (ffmpeg_vm_dir / "bin").string() + ":$PATH\"\n"
+        + "export FFMPEGVM_PATH=\"" + ffmpeg_vm_dir.string() + "\"\n"
+        + end_marker;
 
     if (content.find(start_marker) != std::string::npos) {
         std::cout << "ffmpeg-vm section already exists in .bashrc" << std::endl;

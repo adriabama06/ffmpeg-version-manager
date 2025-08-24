@@ -30,7 +30,6 @@ int main()
 
     for (const FFMPEG_VERSION &ver : versions)
     {
-        std::cout << ver.version << " -> " << ver.url << std::endl;
         display_versions.push_back(ver.version);
     }
 
