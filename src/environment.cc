@@ -44,7 +44,7 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
 
     // Modify PATH
     string newPath;
-    string dir_str = ffmpeg_vm_dir.string();
+    string dir_str = (ffmpeg_vm_dir / "bin").string();
 
     if (add) {
         if (currentPath.find(dir_str) != string::npos) {
@@ -83,6 +83,28 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
 }
 #endif
 
+fs::path get_ffmpeg_vm()
+{
+    const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
+    const char* home = getenv(HOME);
+
+    if (home == NULL) {
+        cerr << "Error: " << HOME << " environment variable not set." << endl;
+        return "";
+    }
+
+    fs::path ffmpeg_vm_dir = fs::path(user_ffmpeg_path != NULL ? user_ffmpeg_path : home) / "ffmpeg-vm";
+
+    if (!fs::exists(ffmpeg_vm_dir)) {
+        if (!fs::create_directories(ffmpeg_vm_dir)) {
+            cerr << "Error: Could not create directory " << ffmpeg_vm_dir << endl;
+            return "";
+        }
+    }
+
+    return ffmpeg_vm_dir;
+}
+
 int setup_env()
 {
     const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
@@ -117,7 +139,7 @@ int setup_env()
 
     const string start_marker = "# --- ffmpeg-vm start ---";
     const string end_marker = "# --- ffmpeg-vm end ---";
-    const string new_section = start_marker + "\nexport PATH=\"" + ffmpeg_vm_dir.string() + ":$PATH\"\n" + end_marker;
+    const string new_section = start_marker + "\nexport PATH=\"" + (ffmpeg_vm_dir / "bin").string() + ":" + (ffmpeg_vm_dir / "lib").string() + ":$PATH\"\n" + end_marker;
 
     if (content.find(start_marker) != string::npos) {
         cout << "ffmpeg-vm section already exists in .bashrc" << endl;

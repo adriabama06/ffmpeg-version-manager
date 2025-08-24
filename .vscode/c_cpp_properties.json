@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/build/_deps/ftxui-src/include",
-                "${workspaceFolder}/build/_deps/nlohmann_json-src/include"
+                "${workspaceFolder}/build/_deps/nlohmann_json-src/include",
+                "${workspaceFolder}/build/_deps/curlpp-src/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
