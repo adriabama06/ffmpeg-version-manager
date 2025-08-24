@@ -1,5 +1,6 @@
 # Custom
 build
+build-windows
 ffmpeg-version-manager*
 
 CMakeLists.txt.user

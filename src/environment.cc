@@ -5,8 +5,9 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
-using namespace std;
+// If you use namespace std & windows.h it creates a confict in std::byte and windows byte
 namespace fs = std::filesystem;
 
 #ifdef _WIN32
@@ -23,40 +24,40 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
     LONG lResult;
     DWORD dwType = REG_EXPAND_SZ;
     DWORD dwSize = 0;
-    string currentPath;
+    std::string currentPath;
 
     // Open environment key
     lResult = RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_READ | KEY_WRITE, &hKey);
     if (lResult != ERROR_SUCCESS) {
-        cerr << "Error: Could not open environment registry key" << endl;
+        std::cerr << "Error: Could not open environment registry key" << std::endl;
         return 1;
     }
 
     // Get current PATH value
     lResult = RegQueryValueExA(hKey, "Path", NULL, &dwType, NULL, &dwSize);
     if (lResult == ERROR_SUCCESS) {
-        vector<char> buffer(dwSize);
+        std::vector<char> buffer(dwSize);
         lResult = RegQueryValueExA(hKey, "Path", NULL, &dwType, (LPBYTE)buffer.data(), &dwSize);
         if (lResult == ERROR_SUCCESS) {
-            currentPath = string(buffer.data(), dwSize - 1); // Remove null terminator
+            currentPath = std::string(buffer.data(), dwSize - 1); // Remove null terminator
         }
     }
 
     // Modify PATH
-    string newPath;
-    string dir_str = (ffmpeg_vm_dir / "bin").string();
+    std::string newPath;
+    std::string dir_str = (ffmpeg_vm_dir / "bin").string();
 
     if (add) {
-        if (currentPath.find(dir_str) != string::npos) {
-            cout << "ffmpeg-vm already in PATH" << endl;
+        if (currentPath.find(dir_str) != std::string::npos) {
+            std::cout << "ffmpeg-vm already in PATH" << std::endl;
             RegCloseKey(hKey);
             return 0;
         }
         newPath = dir_str + ";" + currentPath;
     } else {
         size_t pos = currentPath.find(dir_str);
-        if (pos == string::npos) {
-            cout << "ffmpeg-vm not found in PATH" << endl;
+        if (pos == std::string::npos) {
+            std::cout << "ffmpeg-vm not found in PATH" << std::endl;
             RegCloseKey(hKey);
             return 0;
         }
@@ -68,7 +69,7 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
     lResult = RegSetValueExA(hKey, "Path", 0, REG_EXPAND_SZ, 
                             (const BYTE*)newPath.c_str(), newPath.length() + 1);
     if (lResult != ERROR_SUCCESS) {
-        cerr << "Error: Could not set PATH value" << endl;
+        std::cerr << "Error: Could not set PATH value" << std::endl;
         RegCloseKey(hKey);
         return 1;
     }
@@ -89,7 +90,7 @@ fs::path get_ffmpeg_vm_dir()
     const char* home = getenv(HOME);
 
     if (home == NULL) {
-        cerr << "Error: " << HOME << " environment variable not set." << endl;
+        std::cerr << "Error: " << HOME << " environment variable not set." << std::endl;
         return "";
     }
 
@@ -97,7 +98,7 @@ fs::path get_ffmpeg_vm_dir()
 
     if (!fs::exists(ffmpeg_vm_dir)) {
         if (!fs::create_directories(ffmpeg_vm_dir)) {
-            cerr << "Error: Could not create directory " << ffmpeg_vm_dir << endl;
+            std::cerr << "Error: Could not create directory " << ffmpeg_vm_dir << std::endl;
             return "";
         }
     }
@@ -111,7 +112,7 @@ int setup_env()
     const char* home = getenv(HOME);
 
     if (home == NULL) {
-        cerr << "Error: " << HOME << " environment variable not set." << endl;
+        std::cerr << "Error: " << HOME << " environment variable not set." << std::endl;
         return 1;
     }
 
@@ -119,7 +120,7 @@ int setup_env()
 
     if (!fs::exists(ffmpeg_vm_dir)) {
         if (!fs::create_directories(ffmpeg_vm_dir)) {
-            cerr << "Error: Could not create directory " << ffmpeg_vm_dir << endl;
+            std::cerr << "Error: Could not create directory " << ffmpeg_vm_dir << std::endl;
             return 2;
         }
     }
@@ -128,27 +129,27 @@ int setup_env()
     return update_windows_path(ffmpeg_vm_dir, true);
 #else
     fs::path bashrc_path = fs::path(home) / ".bashrc";
-    ifstream bashrc_in(bashrc_path);
+    std::ifstream bashrc_in(bashrc_path);
     if (!bashrc_in.is_open()) {
-        cerr << "Error: Could not open " << bashrc_path << endl;
+        std::cerr << "Error: Could not open " << bashrc_path << std::endl;
         return 3;
     }
 
-    string content((istreambuf_iterator<char>(bashrc_in)), istreambuf_iterator<char>());
+    std::string content((std::istreambuf_iterator<char>(bashrc_in)), std::istreambuf_iterator<char>());
     bashrc_in.close();
 
-    const string start_marker = "# --- ffmpeg-vm start ---";
-    const string end_marker = "# --- ffmpeg-vm end ---";
-    const string new_section = start_marker + "\nexport PATH=\"" + (ffmpeg_vm_dir / "bin").string() + ":" + (ffmpeg_vm_dir / "lib").string() + ":$PATH\"\n" + end_marker;
+    const std::string start_marker = "# --- ffmpeg-vm start ---";
+    const std::string end_marker = "# --- ffmpeg-vm end ---";
+    const std::string new_section = start_marker + "\nexport PATH=\"" + (ffmpeg_vm_dir / "bin").string() + ":" + (ffmpeg_vm_dir / "lib").string() + ":$PATH\"\n" + end_marker;
 
-    if (content.find(start_marker) != string::npos) {
-        cout << "ffmpeg-vm section already exists in .bashrc" << endl;
+    if (content.find(start_marker) != std::string::npos) {
+        std::cout << "ffmpeg-vm section already exists in .bashrc" << std::endl;
         return 4;
     }
 
-    ofstream bashrc_out(bashrc_path, ios_base::app);
+    std::ofstream bashrc_out(bashrc_path, std::ios_base::app);
     if (!bashrc_out.is_open()) {
-        cerr << "Error: Could not open " << bashrc_path << " for writing." << endl;
+        std::cerr << "Error: Could not open " << bashrc_path << " for writing." << std::endl;
         return 5;
     }
     bashrc_out << "\n" << new_section << "\n";
@@ -164,7 +165,7 @@ int remove_env()
     const char* home = getenv(HOME);
 
     if (home == NULL) {
-        cerr << "Error: " << HOME << " environment variable not set." << endl;
+        std::cerr << "Error: " << HOME << " environment variable not set." << std::endl;
         return 1;
     }
 
@@ -172,7 +173,7 @@ int remove_env()
 
     if (fs::exists(ffmpeg_vm_dir)) {
         if (!fs::remove_all(ffmpeg_vm_dir)) {
-            cerr << "Error: Could not remove directory " << ffmpeg_vm_dir << endl;
+            std::cerr << "Error: Could not remove directory " << ffmpeg_vm_dir << std::endl;
         }
     }
 
@@ -180,26 +181,26 @@ int remove_env()
     return update_windows_path(ffmpeg_vm_dir, false);
 #else
     fs::path bashrc_path = fs::path(home) / ".bashrc";
-    ifstream bashrc_in(bashrc_path);
+    std::ifstream bashrc_in(bashrc_path);
     if (!bashrc_in.is_open()) {
-        cerr << "Error: Could not open " << bashrc_path << endl;
+        std::cerr << "Error: Could not open " << bashrc_path << std::endl;
         return 2;
     }
 
-    string content((istreambuf_iterator<char>(bashrc_in)), istreambuf_iterator<char>());
+    std::string content((std::istreambuf_iterator<char>(bashrc_in)), std::istreambuf_iterator<char>());
     bashrc_in.close();
 
-    const string start_marker = "# --- ffmpeg-vm start ---";
-    const string end_marker = "# --- ffmpeg-vm end ---";
+    const std::string start_marker = "# --- ffmpeg-vm start ---";
+    const std::string end_marker = "# --- ffmpeg-vm end ---";
 
     size_t start_pos = content.find(start_marker);
-    if (start_pos == string::npos) {
-        cout << "No ffmpeg-vm section found in .bashrc" << endl;
+    if (start_pos == std::string::npos) {
+        std::cout << "No ffmpeg-vm section found in .bashrc" << std::endl;
         return 4;
     }
     size_t end_pos = content.find(end_marker, start_pos);
-    if (end_pos == string::npos) {
-        cout << "No end marker found after start marker in .bashrc" << endl;
+    if (end_pos == std::string::npos) {
+        std::cout << "No end marker found after start marker in .bashrc" << std::endl;
         return 5;
     }
     end_pos += end_marker.length();
@@ -213,9 +214,9 @@ int remove_env()
 
     content.erase(start_pos, end_pos - start_pos);
 
-    ofstream bashrc_out(bashrc_path);
+    std::ofstream bashrc_out(bashrc_path);
     if (!bashrc_out.is_open()) {
-        cerr << "Error: Could not open " << bashrc_path << " for writing." << endl;
+        std::cerr << "Error: Could not open " << bashrc_path << " for writing." << std::endl;
         return 6;
     }
     bashrc_out << content;

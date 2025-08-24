@@ -37,8 +37,15 @@ FetchContent_Declare(nlohmann_json
 FetchContent_MakeAvailable(nlohmann_json)
 # ---
 
-# --- Find libcurl
-find_package(CURL REQUIRED)
+# --- Fetch libcurl
+FetchContent_Declare(curl
+  GIT_REPOSITORY https://github.com/curl/curl.git
+  GIT_TAG        curl-8_8_0
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(curl)
 # ---
 
 # --- Fetch libarchive
@@ -68,6 +75,6 @@ target_link_libraries(ffmpeg-version-manager
   PRIVATE ftxui::dom
   PRIVATE ftxui::component  # Not needed for this example.
   PRIVATE nlohmann_json::nlohmann_json
-  PRIVATE CURL::libcurl
+  PRIVATE libcurl
   PRIVATE archive
 )
