@@ -1,0 +1,38 @@
+name: Build FFmpeg Version Manager
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential mingw-w64 libssl-dev
+
+      - name: Build for Linux
+        run: |
+          chmod +x ./build_linux.sh
+          ./build_linux.sh
+      - name: Build for Windows (cross-compile)
+        run: |
+          chmod +x ./build_windows.sh
+          ./build_windows.sh
+
+      - name: Upload Linux build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: ffmpeg-version-manager
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: ffmpeg-version-manager.exe
