@@ -20,3 +20,5 @@ JOBS=$(nproc)
 
 # Build with limited threads to avoid memory issues
 cmake --build build-windows -j $((JOBS>8 ? 8 : JOBS))
+
+cp build/ffmpeg-version-manager.exe .
