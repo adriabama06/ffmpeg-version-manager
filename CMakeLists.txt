@@ -10,6 +10,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Static linking flags for Windows
+if(WIN32)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libgcc -static-libstdc++")
+endif()
+
 # --- Fetch FTXUI --------------------------------------------------------------
 include(FetchContent)
 
@@ -49,7 +55,8 @@ FetchContent_MakeAvailable(curl)
 # ---
 
 # --- Fetch libarchive
-set(ENABLE_TEST OFF)
+set(ENABLE_TEST OFF CACHE BOOL "Disable libarchive tests")
+set(ENABLE_INSTALL OFF CACHE BOOL "Disable libarchive install")
 FetchContent_Declare(archive
   GIT_REPOSITORY https://github.com/libarchive/libarchive.git
   GIT_TAG        v3.8.1
@@ -68,13 +75,32 @@ add_executable(ffmpeg-version-manager
 
 target_include_directories(ffmpeg-version-manager
   PRIVATE src
+  PRIVATE ${archive_SOURCE_DIR}/libarchive
 )
 
 target_link_libraries(ffmpeg-version-manager
   PRIVATE ftxui::screen
   PRIVATE ftxui::dom
-  PRIVATE ftxui::component  # Not needed for this example.
+  PRIVATE ftxui::component
   PRIVATE nlohmann_json::nlohmann_json
   PRIVATE libcurl
-  PRIVATE archive
+  PRIVATE archive_static
 )
+
+# Additional static linking for Windows
+if(WIN32)
+    target_link_options(ffmpeg-version-manager PRIVATE
+        -static
+        -static-libgcc 
+        -static-libstdc++
+    )
+    
+    # Link Windows system libraries statically
+    target_link_libraries(ffmpeg-version-manager PRIVATE
+        ws2_32
+        wldap32
+        winmm
+        crypt32
+        bcrypt
+    )
+endif()
