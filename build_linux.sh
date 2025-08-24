@@ -4,8 +4,8 @@
 cmake -B build \
   -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
-  -DCMAKE_CXX_FLAGS="-static -static-libgcc -static-libstdc++"
+  -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+  -DCMAKE_CXX_FLAGS="-static-libgcc -static-libstdc++"
 
 JOBS=$(nproc)
 
