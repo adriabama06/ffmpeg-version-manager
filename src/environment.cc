@@ -109,7 +109,7 @@ fs::path get_ffmpeg_vm_dir()
         return "";
     }
 
-    fs::path ffmpeg_vm_dir = fs::path(user_ffmpeg_path != NULL ? user_ffmpeg_path : home) / "ffmpeg-vm";
+    fs::path ffmpeg_vm_dir = user_ffmpeg_path != NULL ? fs::path(user_ffmpeg_path) : (fs::path(home) / "ffmpeg-vm");
 
     if (!fs::exists(ffmpeg_vm_dir)) {
         if (!fs::create_directories(ffmpeg_vm_dir)) {
@@ -121,9 +121,8 @@ fs::path get_ffmpeg_vm_dir()
     return ffmpeg_vm_dir;
 }
 
-int setup_env()
+int setup_env(std::string version)
 {
-    const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
     const char* home = getenv(HOME);
 
     if (home == NULL) {
@@ -131,7 +130,7 @@ int setup_env()
         return 1;
     }
 
-    fs::path ffmpeg_vm_dir = fs::path(user_ffmpeg_path != NULL ? user_ffmpeg_path : home) / "ffmpeg-vm";
+    fs::path ffmpeg_vm_dir = get_ffmpeg_vm_dir();
 
     if (!fs::exists(ffmpeg_vm_dir)) {
         if (!fs::create_directories(ffmpeg_vm_dir)) {
@@ -173,13 +172,22 @@ int setup_env()
     bashrc_out << "\n" << new_section << "\n";
     bashrc_out.close();
 
+    std::ofstream ffmpeg_version(ffmpeg_vm_dir / "VERSION");
+
+    if (!ffmpeg_version.is_open()) {
+        std::cerr << "Error: Could not open " << (ffmpeg_vm_dir / "VERSION") << " for writing." << std::endl;
+        return 5;
+    }
+
+    ffmpeg_version << version << "\n";
+    ffmpeg_version.close();
+
     return 0;
 #endif
 }
 
 int remove_env()
 {
-    const char* user_ffmpeg_path = getenv("FFMPEGVM_PATH");
     const char* home = getenv(HOME);
 
     if (home == NULL) {
@@ -187,7 +195,7 @@ int remove_env()
         return 1;
     }
 
-    fs::path ffmpeg_vm_dir = fs::path(user_ffmpeg_path != NULL ? user_ffmpeg_path : home) / "ffmpeg-vm";
+    fs::path ffmpeg_vm_dir = get_ffmpeg_vm_dir();
 
     if (fs::exists(ffmpeg_vm_dir)) {
         if (!fs::remove_all(ffmpeg_vm_dir)) {

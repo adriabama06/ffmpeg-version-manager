@@ -2,6 +2,7 @@
 #include <string> // for string, basic_string
 #include <vector> // for vector
 #include <filesystem>
+#include <fstream>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -17,11 +18,30 @@
 #include "environment.hh"
 
 using namespace ftxui;
+namespace fs = std::filesystem;
 
 void display_alert(ftxui::Element content, const std::chrono::seconds t);
 
 int main()
 {
+    std::string FFMPEGVM_CURRENT_VERSION;
+
+    {
+        std::filesystem::path ffmpeg_vm_dir = get_ffmpeg_vm_dir();
+
+        std::ifstream version_file(ffmpeg_vm_dir / "VERSION");
+        if (version_file.is_open()) {
+            std::string content((std::istreambuf_iterator<char>(version_file)), std::istreambuf_iterator<char>());
+            version_file.close();
+
+            for (size_t i = 0; i < content.length(); i++)
+            {
+                if(content[i] == '\n') break;
+                FFMPEGVM_CURRENT_VERSION.push_back(content[i]);
+            }
+        }
+    }
+
     // Fetch versions
     std::cout << "Fetching versions..." << std::flush;
 
@@ -35,7 +55,8 @@ int main()
 
     for (const FFMPEG_VERSION &ver : versions)
     {
-        display_versions.push_back(ver.version);
+        if(!FFMPEGVM_CURRENT_VERSION.empty() && FFMPEGVM_CURRENT_VERSION == ver.version) display_versions.push_back(ver.version + " (Current)");
+        else display_versions.push_back(ver.version);
     }
 
     ftxui::ScreenInteractive screen = ScreenInteractive::Fullscreen();
@@ -55,6 +76,8 @@ int main()
     version_selector_options.on_enter = [&]
     {
         FFMPEG_VERSION version = versions[version_selected];
+
+        FFMPEGVM_CURRENT_VERSION = version.version;
 
         std::filesystem::path downloaddir = get_ffmpeg_vm_dir();
 
@@ -77,7 +100,7 @@ int main()
         {
             remove_env();
 
-            setup_env();
+            setup_env(version.version);
 
             const std::string fdata = download_file(version.url);
 
@@ -91,6 +114,15 @@ int main()
 
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
+            display_versions.clear();
+
+            // Update current version
+            for (const FFMPEG_VERSION &ver : versions)
+            {
+                if(!FFMPEGVM_CURRENT_VERSION.empty() && FFMPEGVM_CURRENT_VERSION == ver.version) display_versions.push_back(ver.version + " (Current)");
+                else display_versions.push_back(ver.version);
+            }
+
             download_screen.Exit();
         });
 
@@ -103,8 +135,8 @@ int main()
 
     ftxui::Component list_container_component = Container::Tab(
         {version_selector_component | vscroll_indicator | frame | size(HEIGHT, LESS_THAN, 10),
-         Button("Let's uninstall", []
-                { remove_env(); display_alert(text("Uninstall complete!"), std::chrono::seconds(2)); }, ButtonOption::Ascii()),
+         Button("Let's uninstall", [&]
+                { remove_env(); FFMPEGVM_CURRENT_VERSION = ""; display_versions.clear(); for (const FFMPEG_VERSION &ver : versions) display_versions.push_back(ver.version); display_alert(text("Uninstall complete!"), std::chrono::seconds(2)); }, ButtonOption::Ascii()),
          Button("Ok, exit", screen.ExitLoopClosure(), ButtonOption::Ascii())},
         &menu_selected);
 
