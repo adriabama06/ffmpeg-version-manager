@@ -67,9 +67,9 @@ static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow,
         // Reduce the amount of updates/s
         if (progress - last_progress > 0.05)
         {
-            *display_slider = ftxui::text(generate_slider(progress));
+            *display_slider = ftxui::text(generate_slider(progress > 0.95 ? 1.0f : progress));
 
-            (*screen).PostEvent(ftxui::Event::Custom);
+            screen->PostEvent(ftxui::Event::Custom);
 
             last_progress = progress;
         }
@@ -184,7 +184,7 @@ string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenIn
     return response;
 }
 
-int extract(const string &filedata, const fs::path &destination_dir)
+int extract(const string &filedata, const fs::path &destination_dir, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
 {
     struct archive *archiv;
     struct archive_entry *entry;
@@ -207,9 +207,47 @@ int extract(const string &filedata, const fs::path &destination_dir)
     // Number of chars to remove at the start of the path
     size_t ffmpeg_entry_path_lenght = 0;
 
+    float prev_progress = 0;
+    size_t total_entries = 0;
+    size_t processed_entries = 0;
+
+    // Read all entry to know how many files are
+    while (archive_read_next_header(archiv, &entry) == ARCHIVE_OK) {
+        total_entries++;
+        archive_read_data_skip(archiv); // Saltar los datos para solo contar
+    }
+    
+    // Restart the read
+    archive_read_free(archiv);
+    archiv = archive_read_new();
+    archive_read_support_filter_all(archiv);
+    archive_read_support_format_all(archiv);
+    result = archive_read_open_memory(archiv, filedata.data(), filedata.size());
+
+    if (result != ARCHIVE_OK)
+    {
+        cerr << "Error reopening archive from memory: " << archive_error_string(archiv) << endl;
+        archive_read_free(archiv);
+        return 1;
+    }
+
     // Read every entry (file/dir) inside the compressed file
     while (archive_read_next_header(archiv, &entry) == ARCHIVE_OK)
     {
+        if (total_entries > 0)
+        {
+            processed_entries++;
+
+            float progress = static_cast<float>(processed_entries) / static_cast<float>(total_entries);
+
+            // Reduce the amount of updates/s
+            if (progress - prev_progress > 0.05)
+            {
+                *display_slider = ftxui::text(generate_slider(progress > 0.95 ? 1.0f : progress));
+                screen->PostEvent(ftxui::Event::Custom);
+            }
+        }
+
         fs::path entry_path = fs::path(archive_entry_pathname(entry));
 
         if (ffmpeg_entry_path_lenght != 0)

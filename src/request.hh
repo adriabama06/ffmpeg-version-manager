@@ -14,6 +14,6 @@ typedef struct FFMPEG_VERSION_S {
 
 std::vector<FFMPEG_VERSION> get_ffmpeg_versions();
 std::string download_file(std::string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen);
-int extract(const std::string &filedata, const std::filesystem::path &destination_dir);
+int extract(const std::string &filedata, const std::filesystem::path &destination_dir, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen);
 
 #endif // REQUEST_H

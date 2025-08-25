@@ -106,13 +106,13 @@ int main()
             const std::string fdata = download_file(version.url, &display_slider, &download_screen);
 
             display_text = text(center_text("Extracting files..."));
-            display_slider = text(generate_slider(0.5));
+            display_slider = text(generate_slider(0.0f));
             download_screen.PostEvent(ftxui::Event::Custom);
 
-            extract(fdata, downloaddir);
+            extract(fdata, downloaddir, &display_slider, &download_screen);
 
             display_text = text(center_text("Done!"));
-            display_slider = text(generate_slider(1));
+            display_slider = text(generate_slider(1.0f));
             download_screen.PostEvent(ftxui::Event::Custom);
 
             std::this_thread::sleep_for(std::chrono::seconds(1));
