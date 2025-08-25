@@ -250,7 +250,7 @@ int remove_env()
         start_pos--;
     }
 
-    content.erase(start_pos, end_pos - start_pos);
+    content.erase(start_pos - 1, end_pos - start_pos + 1); /* -1 and +1 to include the \n */
 
     std::ofstream bashrc_out(bashrc_path);
     if (!bashrc_out.is_open()) {
