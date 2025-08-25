@@ -16,11 +16,10 @@
 
 #include "request.hh"
 #include "environment.hh"
+#include "ui_elements.hh"
 
 using namespace ftxui;
 namespace fs = std::filesystem;
-
-void display_alert(ftxui::Element content, const std::chrono::seconds t);
 
 int main()
 {
@@ -83,12 +82,14 @@ int main()
 
         ftxui::ScreenInteractive download_screen = ScreenInteractive::Fullscreen();
 
-        ftxui::Element display_text = text("Downloading ffmpeg " + version.version + "...");
+        ftxui::Element display_text = text(center_text("Downloading ffmpeg " + version.version + "..."));
+        ftxui::Element display_slider = text(generate_slider(0));
 
         ftxui::Component download_renderer = Renderer(Container::Horizontal({}), [&]
         {
             ftxui::Element alert_window = vbox({
-                display_text | borderEmpty
+                display_text | borderEmpty,
+                display_slider | borderEmpty
             });
 
             alert_window = alert_window | borderEmpty | border | size(WIDTH, LESS_THAN, 80) |
@@ -102,14 +103,16 @@ int main()
 
             setup_env(version.version);
 
-            const std::string fdata = download_file(version.url);
+            const std::string fdata = download_file(version.url, &display_slider, &download_screen);
 
-            display_text = text("Extracting files...");
+            display_text = text(center_text("Extracting files..."));
+            display_slider = text(generate_slider(0.5));
             download_screen.PostEvent(ftxui::Event::Custom);
 
             extract(fdata, downloaddir);
 
-            display_text = text("Done!");
+            display_text = text(center_text("Done!"));
+            display_slider = text(generate_slider(1));
             download_screen.PostEvent(ftxui::Event::Custom);
 
             std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -152,40 +155,13 @@ int main()
         {
             return window(text("ffmpeg-version-manager v0.1.2"),
                           hbox({
-                              menus_component->Render() | size(WIDTH, EQUAL, 15),
+                              menus_component->Render() | borderEmpty | size(WIDTH, EQUAL, 15),
                               separator(),
-                              list_container_component->Render(),
+                              list_container_component->Render() | borderEmpty,
                           }));
         });
 
     screen.Loop(renderer);
 
     return 0;
-}
-
-void display_alert(ftxui::Element content, const std::chrono::seconds t)
-{
-    ftxui::ScreenInteractive alert_screen = ScreenInteractive::Fullscreen();
-
-        ftxui::Component alert_renderer = Renderer(Container::Horizontal({}), [&]
-        {
-            ftxui::Element alert_window = vbox({
-                content | borderEmpty
-            });
-
-            alert_window = alert_window | borderEmpty | border | size(WIDTH, LESS_THAN, 80) |
-                    size(HEIGHT, LESS_THAN, 20) | center;
-            return alert_window;
-        });
-
-        std::thread alert_thread([&]
-        {
-            std::this_thread::sleep_for(t);
-
-            alert_screen.Exit();
-        });
-
-        alert_thread.detach();
-
-        alert_screen.Loop(alert_renderer);
 }

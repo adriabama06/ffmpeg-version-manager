@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
+#include "ftxui/component/component.hpp"       // for Element
 
 #ifndef REQUEST_H
 #define REQUEST_H
@@ -12,7 +13,7 @@ typedef struct FFMPEG_VERSION_S {
 } FFMPEG_VERSION;
 
 std::vector<FFMPEG_VERSION> get_ffmpeg_versions();
-std::string download_file(std::string url);
+std::string download_file(std::string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen);
 int extract(const std::string &filedata, const std::filesystem::path &destination_dir);
 
 #endif // REQUEST_H

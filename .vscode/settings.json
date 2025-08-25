@@ -72,6 +72,9 @@
         "span": "cpp",
         "valarray": "cpp",
         "filesystem": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "cfenv": "cpp",
+        "charconv": "cpp",
+        "format": "cpp"
     }
 }

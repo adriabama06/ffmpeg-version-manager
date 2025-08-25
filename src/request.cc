@@ -1,4 +1,5 @@
 #include "request.hh"
+#include "ui_elements.hh"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,6 +16,8 @@
 
 #include <archive.h>
 #include <archive_entry.h>
+
+#include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -37,12 +40,42 @@ namespace fs = std::filesystem;
 
 #define FFMPEG_LIST_URL "https://raw.githubusercontent.com/adriabama06/ffmpeg-version-manager/refs/heads/main/ffmpeg-list.json"
 
+typedef struct PROGRESSDATA_S {
+    ftxui::Element* display_slider;
+    ftxui::ScreenInteractive* screen;
+} PROGRESSDATA;
+
 // Callback function to write curl response to a string
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *response)
 {
     size_t totalSize = size * nmemb;
     response->append((char*)contents, totalSize);
     return totalSize;
+}
+
+float last_progress = 0;
+static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+    PROGRESSDATA* data = reinterpret_cast<PROGRESSDATA*>(clientp);
+
+    ftxui::Element* display_slider = data->display_slider;
+    ftxui::ScreenInteractive* screen = data->screen;
+
+    if (dltotal > 0)
+    {
+        float progress = static_cast<float>(dlnow) / static_cast<float>(dltotal);
+
+        // Reduce the amount of updates/s
+        if (progress - last_progress > 0.05)
+        {
+            *display_slider = ftxui::text(generate_slider(progress));
+
+            (*screen).PostEvent(ftxui::Event::Custom);
+
+            last_progress = progress;
+        }
+    }
+
+    return 0; // Return 0 to continue the download
 }
 
 vector<FFMPEG_VERSION> get_ffmpeg_versions()
@@ -110,7 +143,7 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
     return list;
 }
 
-string download_file(string url)
+string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
 {
     // TODO: Add download progress: https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
     CURL *curl;
@@ -128,8 +161,19 @@ string download_file(string url)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
+    PROGRESSDATA data;
+
+    data.display_slider = display_slider;
+    data.screen = screen;
+
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &data);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L); // Enable download progress
+
     res = curl_easy_perform(curl);
     
+    last_progress = 0;
+
     if (res != CURLE_OK) {
         cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
         curl_easy_cleanup(curl);

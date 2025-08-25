@@ -125,6 +125,7 @@ add_executable(ffmpeg-version-manager
   src/main.cc
   src/request.cc
   src/environment.cc
+  src/ui_elements.cc
 )
 
 target_include_directories(ffmpeg-version-manager
