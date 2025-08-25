@@ -32,13 +32,13 @@ jobs:
       - name: Upload Linux build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-build
+          name: linux-x64
           path: ffmpeg-version-manager
 
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
+          name: windows-x64
           path: ffmpeg-version-manager.exe
 
   build-linux-arm64:
@@ -66,7 +66,7 @@ jobs:
       - name: Upload Linux arm64 build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-build-arm64
+          name: linux-arm64
           path: ffmpeg-version-manager
 
   build-windows-arm64:
@@ -114,5 +114,5 @@ jobs:
       - name: Upload Windows arm64 build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-arm64
+          name: windows-arm64
           path: ffmpeg-version-manager.exe
