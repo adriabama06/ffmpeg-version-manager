@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-linux-x64-win64-x64:
+    name: Build Linux x64 and Windows x64
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -40,8 +41,8 @@ jobs:
           name: windows-build
           path: ffmpeg-version-manager.exe
 
-  build-arm64:
-    name: Build (Linux arm64)
+  build-linux-arm64:
+    name: Build Linux arm64
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
@@ -69,7 +70,7 @@ jobs:
           path: ffmpeg-version-manager
 
   build-windows-arm64:
-    name: Build (Windows arm64)
+    name: Build Windows arm64
     runs-on: windows-11-arm
     steps:
       - name: Checkout repository
