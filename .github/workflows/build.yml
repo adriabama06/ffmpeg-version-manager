@@ -72,6 +72,7 @@ jobs:
   build-windows-arm64:
     name: Build Windows arm64
     runs-on: windows-11-arm
+    if: ${{ false }}  # disable for now
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
