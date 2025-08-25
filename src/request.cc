@@ -92,6 +92,10 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
 
         string url = value[OS][ARCH];
 
+        // No version available for this OS and ARCH
+        if(url.empty())
+            continue;
+
         raw_list.push_back(FFMPEG_VERSION{version : key, url : url});
     }
 
