@@ -2,6 +2,9 @@
 #include <string> // for string, basic_string
 #include <vector> // for vector
 #include <filesystem>
+#include <chrono>
+#include <iostream>
+#include <thread>
 
 #include "ftxui/component/captured_mouse.hpp"     // for ftxui
 #include "ftxui/component/component.hpp"          // for Radiobox, Horizontal, Menu, Renderer, Tab
@@ -14,6 +17,8 @@
 #include "environment.hh"
 
 using namespace ftxui;
+
+void display_alert(ftxui::Element content, const std::chrono::seconds t);
 
 int main()
 {
@@ -33,7 +38,7 @@ int main()
         display_versions.push_back(ver.version);
     }
 
-    ftxui::ScreenInteractive screen = ScreenInteractive::TerminalOutput();
+    ftxui::ScreenInteractive screen = ScreenInteractive::Fullscreen();
 
     std::vector<std::string> menus{
         "Install",
@@ -51,15 +56,47 @@ int main()
     {
         FFMPEG_VERSION version = versions[version_selected];
 
-        remove_env();
-
-        setup_env();
-
         std::filesystem::path downloaddir = get_ffmpeg_vm_dir();
 
-        const std::string fdata = download_file(version.url);
+        ftxui::ScreenInteractive download_screen = ScreenInteractive::Fullscreen();
 
-        extract(fdata, downloaddir);
+        ftxui::Element display_text = text("Downloading ffmpeg " + version.version + "...");
+
+        ftxui::Component download_renderer = Renderer(Container::Horizontal({}), [&]
+        {
+            ftxui::Element alert_window = vbox({
+                display_text | borderEmpty
+            });
+
+            alert_window = alert_window | borderEmpty | border | size(WIDTH, LESS_THAN, 80) |
+                    size(HEIGHT, LESS_THAN, 20) | center;
+            return alert_window;
+        });
+
+        std::thread download_thread([&]
+        {
+            remove_env();
+
+            setup_env();
+
+            const std::string fdata = download_file(version.url);
+
+            display_text = text("Extracting files...");
+            download_screen.PostEvent(ftxui::Event::Custom);
+
+            extract(fdata, downloaddir);
+
+            display_text = text("Done!");
+            download_screen.PostEvent(ftxui::Event::Custom);
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+
+            download_screen.Exit();
+        });
+
+        download_thread.detach();
+
+        download_screen.Loop(download_renderer);
     };
 
     ftxui::Component version_selector_component = Menu(&display_versions, &version_selected, version_selector_options);
@@ -67,7 +104,7 @@ int main()
     ftxui::Component list_container_component = Container::Tab(
         {version_selector_component | vscroll_indicator | frame | size(HEIGHT, LESS_THAN, 10),
          Button("Let's uninstall", []
-                { remove_env(); }, ButtonOption::Ascii()),
+                { remove_env(); display_alert(text("Uninstall complete!"), std::chrono::seconds(2)); }, ButtonOption::Ascii()),
          Button("Ok, exit", screen.ExitLoopClosure(), ButtonOption::Ascii())},
         &menu_selected);
 
@@ -81,15 +118,42 @@ int main()
         container,
         [&]
         {
-            return hbox({
-                       menus_component->Render(),
-                       separator(),
-                       list_container_component->Render(),
-                   }) |
-                   border;
+            return window(text("ffmpeg-version-manager v0.1.0"),
+                          hbox({
+                              menus_component->Render() | size(WIDTH, EQUAL, 15),
+                              separator(),
+                              list_container_component->Render(),
+                          }));
         });
 
     screen.Loop(renderer);
 
     return 0;
+}
+
+void display_alert(ftxui::Element content, const std::chrono::seconds t)
+{
+    ftxui::ScreenInteractive alert_screen = ScreenInteractive::Fullscreen();
+
+        ftxui::Component alert_renderer = Renderer(Container::Horizontal({}), [&]
+        {
+            ftxui::Element alert_window = vbox({
+                content | borderEmpty
+            });
+
+            alert_window = alert_window | borderEmpty | border | size(WIDTH, LESS_THAN, 80) |
+                    size(HEIGHT, LESS_THAN, 20) | center;
+            return alert_window;
+        });
+
+        std::thread alert_thread([&]
+        {
+            std::this_thread::sleep_for(t);
+
+            alert_screen.Exit();
+        });
+
+        alert_thread.detach();
+
+        alert_screen.Loop(alert_renderer);
 }
