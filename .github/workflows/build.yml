@@ -67,3 +67,50 @@ jobs:
         with:
           name: linux-build-arm64
           path: ffmpeg-version-manager
+
+  build-windows-arm64:
+    name: Build (Windows arm64)
+    runs-on: windows-11-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show environment (Windows)
+        run: |
+          systeminfo
+        shell: pwsh
+
+      - name: Setup MSYS2 and install toolchain/packages (ARM64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          update: true
+          install: >-
+            git
+            curl
+            make
+            pkgconf
+            nasm
+            yasm
+            mingw-w64-clang-aarch64-toolchain
+
+      - name: Show MSYS2 environment
+        shell: msys2 {0}
+        run: |
+          echo "MSYS2 environment:"
+          uname -a
+          echo "Which clang/gcc:"
+          which clang || true
+          which gcc || true
+
+      - name: Build for Windows (arm64) inside MSYS2
+        shell: msys2 {0}
+        run: |
+          chmod +x ./build_windows.sh
+          ./build_windows.sh
+
+      - name: Upload Windows arm64 build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-arm64
+          path: ffmpeg-version-manager.exe
