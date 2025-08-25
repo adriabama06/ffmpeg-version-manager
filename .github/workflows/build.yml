@@ -8,10 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -21,6 +22,7 @@ jobs:
         run: |
           chmod +x ./build_linux.sh
           ./build_linux.sh
+
       - name: Build for Windows (cross-compile)
         run: |
           chmod +x ./build_windows.sh
@@ -31,8 +33,37 @@ jobs:
         with:
           name: linux-build
           path: ffmpeg-version-manager
+
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: ffmpeg-version-manager.exe
+
+  build-arm64:
+    name: Build (Linux arm64)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        run: |
+          echo "Running on:"
+          uname -a
+
+      - name: Install dependencies (arm64)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libssl-dev
+
+      - name: Build for Linux (arm64)
+        run: |
+          chmod +x ./build_linux.sh
+          ./build_linux.sh
+
+      - name: Upload Linux arm64 build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-arm64
+          path: ffmpeg-version-manager
