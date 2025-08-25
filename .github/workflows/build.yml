@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   release:
-    types: [ published, released, prereleased ]
+    types: [ prereleased, released ]
 
 jobs:
   build-linux-x64-win64-x64:
