@@ -8,6 +8,9 @@ on:
   release:
     types: [ prereleased, released ]
 
+permissions:
+  contents: write
+
 jobs:
   build-linux-x64-win64-x64:
     name: Build Linux x64 and Windows x64
