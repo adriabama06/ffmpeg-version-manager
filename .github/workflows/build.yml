@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  release:
+    types: [ published, released, prereleased ]
 
 jobs:
   build-linux-x64-win64-x64:
@@ -63,11 +65,15 @@ jobs:
           chmod +x ./build_linux.sh
           ./build_linux.sh
 
+      - name: Rename file
+        run: |
+          mv ffmpeg-version-manager ffmpeg-version-manager-arm64
+
       - name: Upload Linux arm64 build artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-arm64
-          path: ffmpeg-version-manager
+          path: ffmpeg-version-manager-arm64
 
   build-windows-arm64:
     name: Build Windows arm64
@@ -111,8 +117,32 @@ jobs:
           chmod +x ./build_windows.sh
           ./build_windows.sh
 
+      - name: Rename file
+        run: |
+          mv ffmpeg-version-manager.exe ffmpeg-version-manager-arm64.exe
+
       - name: Upload Windows arm64 build artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-arm64
-          path: ffmpeg-version-manager.exe
+          path: ffmpeg-version-manager-arm64.exe
+
+  release:
+    name: Attach binaries to release
+    needs: [build-linux-x64-win64-x64, build-linux-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: List downloaded files
+        run: ls -R ./artifacts
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
