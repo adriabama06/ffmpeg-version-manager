@@ -140,7 +140,19 @@ int setup_env(std::string version)
     }
 
 #ifdef _WIN32
-    return update_windows_path(ffmpeg_vm_dir, true);
+    int status = update_windows_path(ffmpeg_vm_dir, true);
+
+    std::ofstream ffmpeg_version(ffmpeg_vm_dir / "VERSION");
+
+    if (!ffmpeg_version.is_open()) {
+        std::cerr << "Error: Could not open " << (ffmpeg_vm_dir / "VERSION") << " for writing." << std::endl;
+        return 5;
+    }
+
+    ffmpeg_version << version << "\n";
+    ffmpeg_version.close();
+
+    return status;
 #else
     fs::path bashrc_path = fs::path(home) / ".bashrc";
     std::ifstream bashrc_in(bashrc_path);
