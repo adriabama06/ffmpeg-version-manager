@@ -25,6 +25,16 @@ namespace fs = std::filesystem;
 #define OS "linux"
 #endif
 
+#if defined(__x86_64__) || defined(_M_X64)
+#define ARCH "x64"
+#pragma message("Compiling for x64 (x86_64 / AMD64)")
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#pragma message("Compiling for ARM64 (AArch64)")
+#define ARCH "arm64"
+#else
+#error "Unknown architecture — build cancelled!"
+#endif
+
 #define FFMPEG_LIST_URL "https://raw.githubusercontent.com/adriabama06/ffmpeg-version-manager/refs/heads/main/ffmpeg-list.json"
 
 // Callback function to write curl response to a string
@@ -77,10 +87,10 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
 
     for (auto &[key, value] : versions.items())
     {
-        if (!value.contains(OS) || !value[OS].is_string())
+        if (!value.contains(OS) || !value[OS].contains(ARCH) || !value[OS][ARCH].is_string())
             continue;
 
-        string url = value[OS];
+        string url = value[OS][ARCH];
 
         raw_list.push_back(FFMPEG_VERSION{version : key, url : url});
     }
