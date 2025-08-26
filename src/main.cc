@@ -14,6 +14,7 @@
 #include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
 #include "ftxui/dom/elements.hpp"                 // for Element, separator, hbox, operator|, border
 
+#include "cli.hh"
 #include "request.hh"
 #include "environment.hh"
 #include "ui_elements.hh"
@@ -21,8 +22,13 @@
 using namespace ftxui;
 namespace fs = std::filesystem;
 
-int main()
+int main(int argc, char *argv[])
 {
+    if(argc > 1)
+    {
+        return run_cli(argc, argv);
+    }
+
     std::string FFMPEGVM_CURRENT_VERSION;
 
     {
@@ -153,7 +159,7 @@ int main()
         container,
         [&]
         {
-            return window(text("ffmpeg-version-manager v0.1.3"),
+            return window(text("ffmpeg-version-manager v0.1.4"),
                           hbox({
                               menus_component->Render() | borderEmpty | size(WIDTH, EQUAL, 15),
                               separator(),
