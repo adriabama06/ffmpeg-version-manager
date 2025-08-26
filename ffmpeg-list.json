@@ -2,7 +2,7 @@
     "versions": {
         "8.0": {
             "windows": {
-                "x64": "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-8.0-full_build.7z",
+                "x64": "",
                 "arm64": ""
             },
             "linux": {
