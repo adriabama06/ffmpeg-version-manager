@@ -38,8 +38,6 @@ namespace fs = std::filesystem;
 #error "Unknown architecture — build cancelled!"
 #endif
 
-#define FFMPEG_LIST_URL "https://raw.githubusercontent.com/adriabama06/ffmpeg-version-manager/refs/heads/main/ffmpeg-list.json"
-
 typedef struct PROGRESSDATA_S {
     ftxui::Element* display_slider;
     ftxui::ScreenInteractive* screen;
@@ -80,6 +78,7 @@ static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow,
 
 vector<FFMPEG_VERSION> get_ffmpeg_versions()
 {
+    const char* custom_url = getenv("FFMPEGVM_URL");
     CURL *curl;
     CURLcode res;
     string response;
@@ -90,7 +89,7 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
         return {};
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, FFMPEG_LIST_URL);
+    curl_easy_setopt(curl, CURLOPT_URL, custom_url != NULL ? custom_url : FFMPEGVM_URL);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -161,14 +160,17 @@ string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenIn
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-    PROGRESSDATA data;
+    if(display_slider != NULL && screen != NULL)
+    {
+        PROGRESSDATA data;
 
-    data.display_slider = display_slider;
-    data.screen = screen;
+        data.display_slider = display_slider;
+        data.screen = screen;
 
-    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
-    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &data);
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L); // Enable download progress
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &data);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L); // Enable download progress
+    }
 
     res = curl_easy_perform(curl);
     
@@ -234,7 +236,7 @@ int extract(const string &filedata, const fs::path &destination_dir, ftxui::Elem
     // Read every entry (file/dir) inside the compressed file
     while (archive_read_next_header(archiv, &entry) == ARCHIVE_OK)
     {
-        if (total_entries > 0)
+        if (total_entries > 0 && display_slider != NULL && screen != NULL)
         {
             processed_entries++;
 
