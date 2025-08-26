@@ -1,5 +1,15 @@
 {
     "versions": {
+        "8.0": {
+            "windows": {
+                "x64": "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-8.0-full_build.7z",
+                "arm64": ""
+            },
+            "linux": {
+                "x64": "",
+                "arm64": ""
+            }
+        },
         "7.1.1": {
             "windows": {
                 "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-23-17-40/ffmpeg-n7.1.1-57-g1b48158a23-win64-gpl-7.1.zip",
