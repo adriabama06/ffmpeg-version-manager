@@ -54,3 +54,6 @@ This project uses the following libraries:
 - [bzip2](https://github.com/commontk/bzip2.git)
 - [xz](https://github.com/tukaani-project/xz.git)
 - [libarchive](https://github.com/libarchive/libarchive.git)
+
+And the builds from:
+- https://github.com/BtbN/FFmpeg-Builds/releases
