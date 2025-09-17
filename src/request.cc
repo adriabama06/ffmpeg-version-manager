@@ -98,8 +98,30 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
     
     if (res != CURLE_OK) {
         cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
-        curl_easy_cleanup(curl);
-        return {};
+
+        // If error is SSL CA cert issue, retry insecure
+        if (res == CURLE_PEER_FAILED_VERIFICATION ||
+            res == CURLE_SSL_CACERT ||
+            res == CURLE_SSL_CACERT_BADFILE) {
+
+            cerr << "Retrying without SSL verification (insecure!)..." << endl;
+
+            // Disable verification
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+            response.clear(); // reset buffer
+            res = curl_easy_perform(curl);
+
+            if (res != CURLE_OK) {
+                cerr << "Second attempt failed: " << curl_easy_strerror(res) << endl;
+                curl_easy_cleanup(curl);
+                return {};
+            }
+        } else {
+            curl_easy_cleanup(curl);
+            return {};
+        }
     }
 
     curl_easy_cleanup(curl);
@@ -178,8 +200,30 @@ string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenIn
 
     if (res != CURLE_OK) {
         cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
-        curl_easy_cleanup(curl);
-        return "";
+
+        // If error is SSL CA cert issue, retry insecure
+        if (res == CURLE_PEER_FAILED_VERIFICATION ||
+            res == CURLE_SSL_CACERT ||
+            res == CURLE_SSL_CACERT_BADFILE) {
+
+            cerr << "Retrying without SSL verification (insecure!)..." << endl;
+
+            // Disable verification
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+            response.clear(); // reset buffer
+            res = curl_easy_perform(curl);
+
+            if (res != CURLE_OK) {
+                cerr << "Second attempt failed: " << curl_easy_strerror(res) << endl;
+                curl_easy_cleanup(curl);
+                return "";
+            }
+        } else {
+            curl_easy_cleanup(curl);
+            return "";
+        }
     }
 
     curl_easy_cleanup(curl);
