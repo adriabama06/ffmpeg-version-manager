@@ -12,22 +12,22 @@
         },
         "7.1.1": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-23-17-40/ffmpeg-n7.1.1-57-g1b48158a23-win64-gpl-7.1.zip",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-24-18-36/ffmpeg-n7.1.1-57-g1b48158a23-winarm64-gpl-7.1.zip"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1.1/ffmpeg-n7.1.1-148-g8627b7c797-win64-gpl-7.1.zip",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1.1/ffmpeg-n7.1.1-148-g8627b7c797-winarm64-gpl-7.1.zip"
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-23-17-40/ffmpeg-n7.1.1-57-g1b48158a23-linux64-gpl-7.1.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-24-18-36/ffmpeg-n7.1.1-57-g1b48158a23-linuxarm64-gpl-7.1.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1.1/ffmpeg-n7.1.1-148-g8627b7c797-linux64-gpl-7.1.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1.1/ffmpeg-n7.1.1-148-g8627b7c797-linuxarm64-gpl-7.1.tar.xz"
             }
         },
         "7.1": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-12-31-13-02/ffmpeg-n7.1-62-gb168ed9b14-win64-gpl-7.1.zip",
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1/ffmpeg-n7.1-16-g15035aaec0-win64-gpl-7.1.zip",
                 "arm64": ""
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-12-31-13-02/ffmpeg-n7.1-62-gb168ed9b14-linux64-gpl-7.1.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-12-31-13-02/ffmpeg-n7.1-62-gb168ed9b14-linuxarm64-gpl-7.1.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1/ffmpeg-n7.1-16-g15035aaec0-linux64-gpl-7.1.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/7.1/ffmpeg-n7.1-16-g15035aaec0-linuxarm64-gpl-7.1.tar.xz"
             }
         },
         "6.1.3": {
