@@ -1,5 +1,8 @@
 #include "cli.hh"
+
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -44,6 +47,24 @@ void print_help()
 }
 void print_list()
 {
+    string FFMPEGVM_CURRENT_VERSION;
+
+    {
+        filesystem::path ffmpeg_vm_dir = get_ffmpeg_vm_dir();
+
+        ifstream version_file(ffmpeg_vm_dir / "VERSION");
+        if (version_file.is_open()) {
+            string content((istreambuf_iterator<char>(version_file)), istreambuf_iterator<char>());
+            version_file.close();
+
+            for (size_t i = 0; i < content.length(); i++)
+            {
+                if(content[i] == '\n') break;
+                FFMPEGVM_CURRENT_VERSION.push_back(content[i]);
+            }
+        }
+    }
+
     cout << "Fetching versions..." << endl;
 
     vector<FFMPEG_VERSION> versions = get_ffmpeg_versions();
@@ -54,7 +75,8 @@ void print_list()
 
     for (const FFMPEG_VERSION& ver : versions)
     {
-        cout << "- " << ver.version << endl;
+        if(!FFMPEGVM_CURRENT_VERSION.empty() && FFMPEGVM_CURRENT_VERSION == ver.version) cout << "- " << ver.version << " (Current)" << endl;
+        else cout << "- " << ver.version << endl;
     }
 }
 
