@@ -48,7 +48,23 @@ FetchContent_Declare(nlohmann_json
 FetchContent_MakeAvailable(nlohmann_json)
 # ---
 
-# --- Fetch libcurl
+# --- Fetch libxml2 and build it statically
+set(LIBXML2_WITH_PYTHON OFF CACHE BOOL "Disable Python bindings")
+set(LIBXML2_WITH_PROGRAMS OFF CACHE BOOL "Disable programs")
+set(LIBXML2_WITH_TESTS OFF CACHE BOOL "Disable tests")
+set(LIBXML2_WITH_ZLIB ON CACHE BOOL "Enable zlib support")
+set(LIBXML2_WITH_LZMA OFF CACHE BOOL "Disable LZMA support to avoid conflicts")
+
+FetchContent_Declare(libxml2
+  GIT_REPOSITORY https://github.com/GNOME/libxml2.git
+  GIT_TAG        v2.12.7
+  GIT_PROGRESS   TRUE
+  GIT_SHALLOW    TRUE
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(libxml2)
+# ---
+
 FetchContent_Declare(curl
   GIT_REPOSITORY https://github.com/curl/curl.git
   GIT_TAG        curl-8_8_0
@@ -110,6 +126,7 @@ set(ENABLE_INSTALL OFF CACHE BOOL "Disable libarchive install")
 set(ENABLE_ZLIB ON CACHE BOOL "Enable zlib support (ZIP, GZ)")
 set(ENABLE_BZip2 ON CACHE BOOL "Enable bzip2 support (BZ2, some 7z)")
 set(ENABLE_LZMA ON CACHE BOOL "Enable LZMA support (XZ, LZMA, some 7z)")
+set(ENABLE_LIBXML2 OFF CACHE BOOL "Disable libxml2 in libarchive")
 
 FetchContent_Declare(archive
   GIT_REPOSITORY https://github.com/libarchive/libarchive.git
@@ -144,6 +161,7 @@ target_link_libraries(ffmpeg-version-manager
   PRIVATE zlibstatic      # For ZIP, GZ support
   PRIVATE libbz2          # For BZ2 support (and some 7z files)
   PRIVATE liblzma         # For XZ, LZMA support (and some 7z files)
+  PRIVATE LibXml2::LibXml2  # Our statically built libxml2
 )
 
 # Additional static linking for Windows
