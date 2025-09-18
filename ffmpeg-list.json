@@ -32,52 +32,52 @@
         },
         "6.1.3": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-23-17-40/ffmpeg-n6.1.3-win64-gpl-6.1.zip",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-24-18-36/ffmpeg-n6.1.3-winarm64-gpl-6.1.zip"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.3/ffmpeg-n6.1.3-win64-gpl-6.1.zip",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.3/ffmpeg-n6.1.3-winarm64-gpl-6.1.zip"
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-23-17-40/ffmpeg-n6.1.3-linux64-gpl-6.1.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-24-18-36/ffmpeg-n6.1.3-linuxarm64-gpl-6.1.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.3/ffmpeg-n6.1.3-linux64-gpl-6.1.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.3/ffmpeg-n6.1.3-linuxarm64-gpl-6.1.tar.xz"
             }
         },
         "6.1.2": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-03-31-12-55/ffmpeg-n6.1.2-27-ge16ff06adb-win64-gpl-6.1.zip",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-03-31-12-55/ffmpeg-n6.1.2-27-ge16ff06adb-winarm64-gpl-6.1.zip"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.2/ffmpeg-n6.1.2-27-ge16ff06adb-win64-gpl-6.1.zip",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.2/ffmpeg-n6.1.2-27-ge16ff06adb-winarm64-gpl-6.1.zip"
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-03-31-12-55/ffmpeg-n6.1.2-27-ge16ff06adb-linux64-gpl-6.1.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-03-31-12-55/ffmpeg-n6.1.2-27-ge16ff06adb-linuxarm64-gpl-6.1.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.2/ffmpeg-n6.1.2-27-ge16ff06adb-linux64-gpl-6.1.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.1.2/ffmpeg-n6.1.2-27-ge16ff06adb-linuxarm64-gpl-6.1.tar.xz"
             }
         },
         "6.0": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n6.0-35-g067ed535f4-win64-gpl-6.0.zip",
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.0/ffmpeg-n6.0-162-g07e3223dd0-win64-gpl-6.0.zip",
                 "arm64": ""
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n6.0-35-g067ed535f4-linux64-gpl-6.0.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n6.0-35-g067ed535f4-linuxarm64-gpl-6.0.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.0/ffmpeg-n6.0-162-g07e3223dd0-linux64-gpl-6.0.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/6.0/ffmpeg-n6.0-162-g07e3223dd0-linuxarm64-gpl-6.0.tar.xz"
             }
         },
         "5.1.3": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n5.1.3-16-g566aa38d98-win64-gpl-5.1.zip",
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/5.1.3/ffmpeg-n5.1.3-105-g7739dabb89-win64-gpl-5.1.zip",
                 "arm64": ""
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n5.1.3-16-g566aa38d98-linux64-gpl-5.1.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n5.1.3-16-g566aa38d98-linuxarm64-gpl-5.1.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/5.1.3/ffmpeg-n5.1.3-105-g7739dabb89-linux64-gpl-5.1.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/5.1.3/ffmpeg-n5.1.3-105-g7739dabb89-linuxarm64-gpl-5.1.tar.xz"
             }
         },
         "4.4.4": {
             "windows": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n4.4.4-6-gd5fa6e3a91-win64-gpl-4.4.zip",
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/4.4.4/ffmpeg-n4.4.4-6-gd5fa6e3a91-win64-gpl-4.4.zip",
                 "arm64": ""
             },
             "linux": {
-                "x64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n4.4.4-6-gd5fa6e3a91-linux64-gpl-4.4.tar.xz",
-                "arm64": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-09-30-12-56/ffmpeg-n4.4.4-6-gd5fa6e3a91-linuxarm64-gpl-4.4.tar.xz"
+                "x64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/4.4.4/ffmpeg-n4.4.4-6-gd5fa6e3a91-linux64-gpl-4.4.tar.xz",
+                "arm64": "https://github.com/adriabama06/FFmpeg-Builds-Archive/raw/refs/heads/main/4.4.4/ffmpeg-n4.4.4-6-gd5fa6e3a91-linuxarm64-gpl-4.4.tar.xz"
             }
         }
     }
