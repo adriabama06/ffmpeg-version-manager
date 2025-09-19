@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
         container,
         [&]
         {
-            return window(text("ffmpeg-version-manager v0.1.4"),
+            return window(text("ffmpeg-version-manager v0.1.5"),
                           hbox({
                               menus_component->Render() | borderEmpty | size(WIDTH, EQUAL, 15),
                               separator(),

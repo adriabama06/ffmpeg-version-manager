@@ -7,7 +7,7 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-#define FFMPEGVM_URL "https://raw.githubusercontent.com/adriabama06/ffmpeg-version-manager/refs/heads/main/ffmpeg-list.json"
+#define FFMPEGVM_URL "https://raw.githubusercontent.com/adriabama06/FFmpeg-Builds-Archive/refs/heads/main/ffmpeg-list.json"
 
 typedef struct FFMPEG_VERSION_S {
     std::string version;
