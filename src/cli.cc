@@ -28,7 +28,7 @@ OPTIONS default_options()
 
 void print_help()
 {
-    cout << "ffmpeg-version-manager v0.1.5" << endl;
+    cout << "ffmpeg-version-manager v0.1.6" << endl;
     cout << "Arguments:" << endl;
     cout << "   -h/--help              -> Print this screen." << endl;
     cout << "   -u/--uninstall         -> Uninstall the current ffmpeg-vm installed and the current env." << endl;
@@ -65,7 +65,7 @@ void print_list()
         }
     }
 
-    cout << "Fetching versions..." << endl;
+    cout << "Fetching versions from '" << (getenv("FFMPEGVM_URL") != NULL ? getenv("FFMPEGVM_URL") : FFMPEGVM_URL) << "'..." << endl;
 
     vector<FFMPEG_VERSION> versions = get_ffmpeg_versions();
 
