@@ -131,6 +131,7 @@ add_executable(ffmpeg-version-manager
 )
 
 target_include_directories(ffmpeg-version-manager
+  PRIVATE include
   PRIVATE src
   PRIVATE ${archive_SOURCE_DIR}/libarchive
 )

@@ -2,9 +2,9 @@ name: Build FFmpeg Version Manager
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ '**' ]
   release:
     types: [ prereleased, released ]
 

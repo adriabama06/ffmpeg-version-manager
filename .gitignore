@@ -2,6 +2,7 @@
 build
 build-windows
 ffmpeg-version-manager*
+.qwen
 
 CMakeLists.txt.user
 CMakeCache.txt
