@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.22)
 
 project(ffmpeg-version-manager
   LANGUAGES C CXX
-  VERSION 0.1.6
+  VERSION 0.1.7
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -129,6 +129,7 @@ add_executable(ffmpeg-version-manager
   src/ui_elements.cc
   src/cli.cc
   src/tui.cc
+  src/curl_tools.cc
 )
 
 target_include_directories(ffmpeg-version-manager

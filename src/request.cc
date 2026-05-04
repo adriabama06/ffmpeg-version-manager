@@ -1,5 +1,6 @@
 #include "request.hh"
 #include "ui_elements.hh"
+#include "curl_tools.hh"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -9,8 +10,6 @@
 #include <string>
 #include <sstream>
 #include <memory>
-
-#include <curl/curl.h>
 
 #include <nlohmann/json.hpp>
 
@@ -51,6 +50,7 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::stri
     return totalSize;
 }
 
+// https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
 float last_progress = 0;
 static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     PROGRESSDATA* data = reinterpret_cast<PROGRESSDATA*>(clientp);
@@ -79,55 +79,11 @@ static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow,
 vector<FFMPEG_VERSION> get_ffmpeg_versions()
 {
     const char* custom_url = getenv("FFMPEGVM_URL");
-    CURL *curl;
-    CURLcode res;
     string response;
-
-    curl = curl_easy_init();
-    if (!curl) {
-        cerr << "Failed to initialize curl" << endl;
-        return {};
-    }
-
-    curl_easy_setopt(curl, CURLOPT_URL, custom_url != NULL ? custom_url : FFMPEGVM_URL);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    res = curl_easy_perform(curl);
-    
-    if (res != CURLE_OK) {
-        cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
-
-        // If error is SSL CA cert issue, retry insecure
-        if (res == CURLE_PEER_FAILED_VERIFICATION ||
-            res == CURLE_SSL_CACERT ||
-            res == CURLE_SSL_CACERT_BADFILE) {
-
-            cerr << "Retrying without SSL verification (insecure!)..." << endl;
-
-            // Disable verification
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-
-            response.clear(); // reset buffer
-            res = curl_easy_perform(curl);
-
-            if (res != CURLE_OK) {
-                cerr << "Second attempt failed: " << curl_easy_strerror(res) << endl;
-                curl_easy_cleanup(curl);
-                return {};
-            }
-        } else {
-            curl_easy_cleanup(curl);
-            return {};
-        }
-    }
-
-    curl_easy_cleanup(curl);
+    int status = quick_curl_request(custom_url != NULL ? custom_url : FFMPEGVM_URL, &response);
 
     // Error on request
-    if (response.empty())
+    if (status != 0 || response.empty())
         return {};
 
     nlohmann::json json = nlohmann::json::parse(response);
@@ -166,7 +122,6 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
 
 string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
 {
-    // TODO: Add download progress: https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
     CURL *curl;
     CURLcode res;
     string response;
