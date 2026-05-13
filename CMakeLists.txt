@@ -130,6 +130,8 @@ add_executable(ffmpeg-version-manager
   src/cli.cc
   src/tui.cc
   src/curl_tools.cc
+  src/env_settings.linux.cc
+  src/env_settings.windows.cc
 )
 
 target_include_directories(ffmpeg-version-manager
