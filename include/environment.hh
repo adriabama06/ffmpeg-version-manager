@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <string>
 
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H

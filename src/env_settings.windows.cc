@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 
 // If you using namespace std and windows.h it creates a confict in std::byte and windows byte
 namespace fs = std::filesystem;
@@ -95,6 +96,7 @@ int update_windows_path(const fs::path& ffmpeg_vm_dir, bool add) {
 
 #endif
 
+#ifdef _WIN32
 
 int os_setup_env(std::string version, std::filesystem::path ffmpeg_vm_dir, const char* home)
 {
@@ -117,3 +119,5 @@ int os_remove_env(std::filesystem::path ffmpeg_vm_dir, const char* home)
 {
     return update_windows_path(ffmpeg_vm_dir, false);
 }
+
+#endif

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 
 // If you using namespace std and windows.h it creates a confict in std::byte and windows byte
 namespace fs = std::filesystem;
