@@ -120,68 +120,42 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
     return list;
 }
 
-string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
+string display_download_file(string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
 {
-    CURL *curl;
-    CURLcode res;
+    CURL *curl = init_curl_request(url);
     string response;
 
-    curl = curl_easy_init();
-    if (!curl) {
-        cerr << "Failed to initialize curl" << endl;
+    assert(display_slider != NULL && screen != NULL); // Use this function with a display
+
+    PROGRESSDATA data;
+
+    data.display_slider = display_slider;
+    data.screen = screen;
+
+    set_progress_callback_curl(curl, &data, ProgressCallback);
+
+    CURLcode res = launch_curl_request_result(curl, &response);
+
+    if(is_curl_cert_error(res))
+    {
+        response.clear();
+
+        set_unsecure_curl(curl);
+        res = launch_curl_request_result(curl, &response);
+    }
+
+    // After downloading reset window to 0
+    last_progress = 0;
+
+    destroy_curl(curl);
+
+    if(res != CURLE_OK)
+    {
+        cout << "curl_request: Error on request: " << curl_easy_strerror(res) << endl;
+
         return "";
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    if(display_slider != NULL && screen != NULL)
-    {
-        PROGRESSDATA data;
-
-        data.display_slider = display_slider;
-        data.screen = screen;
-
-        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &data);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L); // Enable download progress
-    }
-
-    res = curl_easy_perform(curl);
-    
-    last_progress = 0;
-
-    if (res != CURLE_OK) {
-        cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
-
-        // If error is SSL CA cert issue, retry insecure
-        if (res == CURLE_PEER_FAILED_VERIFICATION ||
-            res == CURLE_SSL_CACERT ||
-            res == CURLE_SSL_CACERT_BADFILE) {
-
-            cerr << "Retrying without SSL verification (insecure!)..." << endl;
-
-            // Disable verification
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-
-            response.clear(); // reset buffer
-            res = curl_easy_perform(curl);
-
-            if (res != CURLE_OK) {
-                cerr << "Second attempt failed: " << curl_easy_strerror(res) << endl;
-                curl_easy_cleanup(curl);
-                return "";
-            }
-        } else {
-            curl_easy_cleanup(curl);
-            return "";
-        }
-    }
-
-    curl_easy_cleanup(curl);
     return response;
 }
 

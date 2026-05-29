@@ -8,6 +8,7 @@
 
 #include "environment.hh"
 #include "request.hh"
+#include "curl_tools.hh"
 
 using namespace std;
 
@@ -155,7 +156,13 @@ int run_cli(int argc, char *argv[])
         filesystem::path downloaddir = get_ffmpeg_vm_dir();
 
         cout << "Downloading ffmpeg " + version.version + "..." << endl;
-        const string fdata = download_file(version.url, NULL, NULL);
+        string fdata;
+        int status = quick_curl_request(version.url, &fdata);
+
+        if(status != 0)
+        {
+            cout << "Error on download the file" << endl;
+        }
 
         cout << "Extracting files..." << endl;
         extract(fdata, downloaddir, NULL, NULL);

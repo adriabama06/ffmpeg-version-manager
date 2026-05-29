@@ -107,7 +107,7 @@ int run_tui()
 
             setup_env(version.version);
 
-            const std::string fdata = download_file(version.url, &display_slider, &download_screen);
+            const std::string fdata = display_download_file(version.url, &display_slider, &download_screen);
 
             display_text = text(center_text("Extracting files..."));
             display_slider = text(generate_slider(0.0f));

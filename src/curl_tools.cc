@@ -13,6 +13,8 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::stri
 
 bool is_curl_cert_error(CURLcode res)
 {
+    if(res != CURLE_OK) cout << curl_easy_strerror(res) << endl;
+
     return res == CURLE_PEER_FAILED_VERIFICATION || res == CURLE_SSL_CACERT || res == CURLE_SSL_CACERT_BADFILE;
 }
 
@@ -33,12 +35,19 @@ CURL* init_curl_request(string url)
     return curl;
 }
 
-void* set_unsecure_curl(CURL* curl)
+void set_unsecure_curl(CURL* curl)
 {
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
     cout << "set_unsecure_curl: Disabling SSL Check" << endl;
+}
+
+void set_progress_callback_curl(CURL* curl, void* callback_data, int (*callback)(void*, curl_off_t, curl_off_t, curl_off_t, curl_off_t))
+{
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, callback);
+    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, callback_data);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L); // Enable download progress
 }
 
 void destroy_curl(CURL* curl)
@@ -75,16 +84,14 @@ int quick_curl_request(string url, string* result)
         res = launch_curl_request_result(curl, result);
     }
 
+    destroy_curl(curl);
+
     if(res != CURLE_OK)
     {
         cout << "curl_request: Error on request: " << curl_easy_strerror(res) << endl;
 
-        destroy_curl(curl);
-
         return 2;
     }
-
-    destroy_curl(curl);
 
     return 0;
 }
