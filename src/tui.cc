@@ -113,7 +113,7 @@ int run_tui()
             display_slider = text(generate_slider(0.0f));
             download_screen.PostEvent(ftxui::Event::Custom);
 
-            extract(fdata, downloaddir, &display_slider, &download_screen);
+            display_extract(fdata, downloaddir, &display_slider, &download_screen);
 
             display_text = text(center_text("Done!"));
             display_slider = text(generate_slider(1.0f));

@@ -9,6 +9,7 @@
 #include "environment.hh"
 #include "request.hh"
 #include "curl_tools.hh"
+#include "compress.hh"
 
 using namespace std;
 
@@ -162,10 +163,17 @@ int run_cli(int argc, char *argv[])
         if(status != 0)
         {
             cout << "Error on download the file" << endl;
+            return 2;
         }
 
         cout << "Extracting files..." << endl;
-        extract(fdata, downloaddir, NULL, NULL);
+        status = extract_from_memory_to_folder(fdata, downloaddir);
+
+        if(status != 0)
+        {
+            cout << "Error on extracting the file" << endl;
+            return 3;
+        }
 
 #ifdef _WIN32
         cout << "Done! Please open a new terminal to load the custom env for ffmpeg-vm" << endl;

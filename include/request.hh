@@ -28,6 +28,6 @@ inline bool operator<(const FFMPEG_VERSION& a, const FFMPEG_VERSION& b)
 
 std::vector<FFMPEG_VERSION> get_ffmpeg_versions();
 std::string display_download_file(std::string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen);
-int extract(const std::string &filedata, const std::filesystem::path &destination_dir, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen);
+int display_extract(const std::string &filedata, const std::filesystem::path &destination_dir, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen);
 
 #endif // REQUEST_H
