@@ -1,7 +1,5 @@
 # FFmpeg Version Manager
 
-Note: I made this code in a rush, this means that the code is hard to read.
-
 A command-line tool to manage multiple versions of FFmpeg, enabling seamless switching between different versions for development and testing.
 
 ## Features
@@ -10,6 +8,11 @@ A command-line tool to manage multiple versions of FFmpeg, enabling seamless swi
 - Pre-built binaries available for download (see [Releases](https://github.com/adriabama06/ffmpeg-version-manager/releases))
 - Build from source for custom versions
 - Cross-platform support (Linux, Windows)
+
+*Note: On Linux only works if you are using bash & ~/.bashrc, help me to improve this to more envs*
+
+*Note: In runtime requires $HOME for bash or %USERPROFILE% for Windows (it is usually always available; this is only to advise if you are using scripts or any other env)*
+
 
 ## Installation
 

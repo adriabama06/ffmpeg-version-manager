@@ -1,5 +1,6 @@
 #include "request.hh"
 #include "ui_elements.hh"
+#include "curl_tools.hh"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -10,12 +11,9 @@
 #include <sstream>
 #include <memory>
 
-#include <curl/curl.h>
-
 #include <nlohmann/json.hpp>
 
-#include <archive.h>
-#include <archive_entry.h>
+#include "compress.hh"
 
 #include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
 
@@ -51,8 +49,10 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::stri
     return totalSize;
 }
 
+// https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
 float last_progress = 0;
-static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+
+static int DownloadCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     PROGRESSDATA* data = reinterpret_cast<PROGRESSDATA*>(clientp);
 
     ftxui::Element* display_slider = data->display_slider;
@@ -79,55 +79,11 @@ static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow,
 vector<FFMPEG_VERSION> get_ffmpeg_versions()
 {
     const char* custom_url = getenv("FFMPEGVM_URL");
-    CURL *curl;
-    CURLcode res;
     string response;
-
-    curl = curl_easy_init();
-    if (!curl) {
-        cerr << "Failed to initialize curl" << endl;
-        return {};
-    }
-
-    curl_easy_setopt(curl, CURLOPT_URL, custom_url != NULL ? custom_url : FFMPEGVM_URL);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    res = curl_easy_perform(curl);
-    
-    if (res != CURLE_OK) {
-        cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
-
-        // If error is SSL CA cert issue, retry insecure
-        if (res == CURLE_PEER_FAILED_VERIFICATION ||
-            res == CURLE_SSL_CACERT ||
-            res == CURLE_SSL_CACERT_BADFILE) {
-
-            cerr << "Retrying without SSL verification (insecure!)..." << endl;
-
-            // Disable verification
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-
-            response.clear(); // reset buffer
-            res = curl_easy_perform(curl);
-
-            if (res != CURLE_OK) {
-                cerr << "Second attempt failed: " << curl_easy_strerror(res) << endl;
-                curl_easy_cleanup(curl);
-                return {};
-            }
-        } else {
-            curl_easy_cleanup(curl);
-            return {};
-        }
-    }
-
-    curl_easy_cleanup(curl);
+    int status = quick_curl_request(custom_url != NULL ? custom_url : FFMPEGVM_URL, &response);
 
     // Error on request
-    if (response.empty())
+    if (status != 0 || response.empty())
         return {};
 
     nlohmann::json json = nlohmann::json::parse(response);
@@ -164,244 +120,69 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
     return list;
 }
 
-string download_file(string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
+string display_download_file(string url, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
 {
-    // TODO: Add download progress: https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
-    CURL *curl;
-    CURLcode res;
+    CURL *curl = init_curl_request(url);
     string response;
 
-    curl = curl_easy_init();
-    if (!curl) {
-        cerr << "Failed to initialize curl" << endl;
+    assert(display_slider != NULL && screen != NULL); // Use this function with a display
+
+    PROGRESSDATA data;
+
+    data.display_slider = display_slider;
+    data.screen = screen;
+
+    set_progress_callback_curl(curl, &data, DownloadCallback);
+
+    CURLcode res = launch_curl_request_result(curl, &response);
+
+    if(is_curl_cert_error(res))
+    {
+        response.clear();
+
+        set_unsecure_curl(curl);
+        res = launch_curl_request_result(curl, &response);
+    }
+
+    // After downloading reset window to 0
+    last_progress = 0;
+
+    destroy_curl(curl);
+
+    if(res != CURLE_OK)
+    {
+        cout << "curl_request: Error on request: " << curl_easy_strerror(res) << endl;
+
         return "";
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    if(display_slider != NULL && screen != NULL)
-    {
-        PROGRESSDATA data;
-
-        data.display_slider = display_slider;
-        data.screen = screen;
-
-        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &data);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L); // Enable download progress
-    }
-
-    res = curl_easy_perform(curl);
-    
-    last_progress = 0;
-
-    if (res != CURLE_OK) {
-        cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
-
-        // If error is SSL CA cert issue, retry insecure
-        if (res == CURLE_PEER_FAILED_VERIFICATION ||
-            res == CURLE_SSL_CACERT ||
-            res == CURLE_SSL_CACERT_BADFILE) {
-
-            cerr << "Retrying without SSL verification (insecure!)..." << endl;
-
-            // Disable verification
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-
-            response.clear(); // reset buffer
-            res = curl_easy_perform(curl);
-
-            if (res != CURLE_OK) {
-                cerr << "Second attempt failed: " << curl_easy_strerror(res) << endl;
-                curl_easy_cleanup(curl);
-                return "";
-            }
-        } else {
-            curl_easy_cleanup(curl);
-            return "";
-        }
-    }
-
-    curl_easy_cleanup(curl);
     return response;
 }
 
-int extract(const string &filedata, const fs::path &destination_dir, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
+static void ExtractCallback(void *callback_data, size_t processed_entries, size_t total_entries)
 {
-    struct archive *archiv;
-    struct archive_entry *entry;
-    int result;
+    PROGRESSDATA* data = reinterpret_cast<PROGRESSDATA*>(callback_data);
 
-    archiv = archive_read_new();
-    archive_read_support_filter_all(archiv); // Support for gzip, bzip2, xz, etc.
-    archive_read_support_format_all(archiv); // Support for tar, zip, 7zip, etc.
 
-    // Load from memory
-    result = archive_read_open_memory(archiv, filedata.data(), filedata.size());
 
-    if (result != ARCHIVE_OK)
+    float progress = static_cast<float>(processed_entries) / static_cast<float>(total_entries);
+
+    // Reduce the amount of updates/s
+    if (progress - last_progress > 0.05)
     {
-        cerr << "Error opening archive from memory: " << archive_error_string(archiv) << endl;
-        archive_read_free(archiv);
-        return 1;
+        *data->display_slider = ftxui::text(generate_slider(progress > 0.95 ? 1.0f : progress));
+        data->screen->PostEvent(ftxui::Event::Custom);
     }
+}
 
-    // Number of chars to remove at the start of the path
-    size_t ffmpeg_entry_path_lenght = 0;
+int display_extract(const string &filedata, const fs::path &destination_dir, ftxui::Element* display_slider, ftxui::ScreenInteractive* screen)
+{
+    last_progress = 0;
 
-    float prev_progress = 0;
-    size_t total_entries = 0;
-    size_t processed_entries = 0;
+    PROGRESSDATA data;
 
-    // Read all entry to know how many files are
-    while (archive_read_next_header(archiv, &entry) == ARCHIVE_OK) {
-        total_entries++;
-        archive_read_data_skip(archiv); // Saltar los datos para solo contar
-    }
-    
-    // Restart the read
-    archive_read_free(archiv);
-    archiv = archive_read_new();
-    archive_read_support_filter_all(archiv);
-    archive_read_support_format_all(archiv);
-    result = archive_read_open_memory(archiv, filedata.data(), filedata.size());
+    data.display_slider = display_slider;
+    data.screen = screen;
 
-    if (result != ARCHIVE_OK)
-    {
-        cerr << "Error reopening archive from memory: " << archive_error_string(archiv) << endl;
-        archive_read_free(archiv);
-        return 1;
-    }
-
-    // Read every entry (file/dir) inside the compressed file
-    while (archive_read_next_header(archiv, &entry) == ARCHIVE_OK)
-    {
-        if (total_entries > 0 && display_slider != NULL && screen != NULL)
-        {
-            processed_entries++;
-
-            float progress = static_cast<float>(processed_entries) / static_cast<float>(total_entries);
-
-            // Reduce the amount of updates/s
-            if (progress - prev_progress > 0.05)
-            {
-                *display_slider = ftxui::text(generate_slider(progress > 0.95 ? 1.0f : progress));
-                screen->PostEvent(ftxui::Event::Custom);
-            }
-        }
-
-        fs::path entry_path = fs::path(archive_entry_pathname(entry));
-
-        if (ffmpeg_entry_path_lenght != 0)
-        {
-            string temp = entry_path.string();
-
-            temp.erase(0, ffmpeg_entry_path_lenght);
-
-            entry_path = fs::path(temp);
-        }
-
-        const fs::path full_dest_path = destination_dir / entry_path;
-
-        /*
-            The first entry is the root folder
-            because we want all in ffmpeg-vm/... and not in ffmpeg-vm/something/..., we check this path to remove
-        */
-        if (ffmpeg_entry_path_lenght == 0 && entry_path.string().rfind("ffmpeg") == 0) // Check if starts with ffmpeg
-        {
-            ffmpeg_entry_path_lenght = entry_path.string().length();
-            continue;
-        }
-
-        // Make sure that the folder exist
-        if (full_dest_path.has_parent_path())
-        {
-            fs::create_directories(full_dest_path.parent_path());
-        }
-
-        // If is only a directory, create the dir
-        if (archive_entry_filetype(entry) == AE_IFDIR)
-        {
-            fs::create_directories(full_dest_path);
-
-            continue;
-        }
-
-#ifndef _WIN32
-        // If is only a symlink, create the symlink
-        if (archive_entry_filetype(entry) == AE_IFLNK)
-        {
-            const char* link_target_cstr = archive_entry_symlink(entry);
-
-            if (link_target_cstr) {
-                // fs::create_symlink can fail if the link exist
-                std::error_code ec;
-                fs::remove(full_dest_path, ec); // Remove to prevent errors
-                fs::create_symlink(fs::path(link_target_cstr), full_dest_path);
-            } else {
-                cerr << "Warning: could not read symlink target for " << full_dest_path << endl;
-            }
-
-            continue;
-        }
-#endif
-
-        // if it's a file, write it to disk
-        ofstream outfile(full_dest_path, ios::binary);
-
-        if (!outfile)
-        {
-            cerr << "Error: Could not open file for writing: " << full_dest_path << endl;
-            archive_read_close(archiv);
-            archive_read_free(archiv);
-            return 2;
-        }
-
-        const void *buff;
-        size_t size;
-        la_int64_t offset;
-
-        // Read the blocks and write it
-        while ((result = archive_read_data_block(archiv, &buff, &size, &offset)) == ARCHIVE_OK)
-        {
-            outfile.write(static_cast<const char *>(buff), size);
-        }
-
-        if (result != ARCHIVE_EOF)
-        {
-            cerr << "Error reading data block: " << archive_error_string(archiv) << endl;
-            archive_read_close(archiv);
-            archive_read_free(archiv);
-            return 3;
-        }
-
-#ifndef _WIN32
-        // Restore permissions
-        if (archive_entry_filetype(entry) != AE_IFLNK) {
-            try {
-                fs::permissions(full_dest_path, static_cast<fs::perms>(archive_entry_perm(entry)), fs::perm_options::replace);
-            } catch (const exception& e) {
-                cerr << "Warning: could not set permissions for " << full_dest_path << ". " << e.what() << endl;
-            }
-        }
-#endif
-    }
-
-    // Check if error on readling last header
-    result = archive_read_close(archiv);
-
-    if (result != ARCHIVE_OK)
-    {
-        cerr << "Error closing archive: " << archive_error_string(archiv) << endl;
-        archive_read_free(archiv);
-        return 4;
-    }
-
-    archive_read_free(archiv);
-
-    return 0;
+    return extract_from_memory_to_folder(filedata, destination_dir, &data, ExtractCallback);
 }

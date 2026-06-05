@@ -8,6 +8,8 @@
 
 #include "environment.hh"
 #include "request.hh"
+#include "curl_tools.hh"
+#include "compress.hh"
 
 using namespace std;
 
@@ -28,7 +30,7 @@ OPTIONS default_options()
 
 void print_help()
 {
-    cout << "ffmpeg-version-manager v0.1.6" << endl;
+    cout << "ffmpeg-version-manager v0.1.7" << endl;
     cout << "Arguments:" << endl;
     cout << "   -h/--help              -> Print this screen." << endl;
     cout << "   -u/--uninstall         -> Uninstall the current ffmpeg-vm installed and the current env." << endl;
@@ -155,10 +157,23 @@ int run_cli(int argc, char *argv[])
         filesystem::path downloaddir = get_ffmpeg_vm_dir();
 
         cout << "Downloading ffmpeg " + version.version + "..." << endl;
-        const string fdata = download_file(version.url, NULL, NULL);
+        string fdata;
+        int status = quick_curl_request(version.url, &fdata);
+
+        if(status != 0)
+        {
+            cout << "Error on download the file" << endl;
+            return 2;
+        }
 
         cout << "Extracting files..." << endl;
-        extract(fdata, downloaddir, NULL, NULL);
+        status = extract_from_memory_to_folder(fdata, downloaddir);
+
+        if(status != 0)
+        {
+            cout << "Error on extracting the file" << endl;
+            return 3;
+        }
 
 #ifdef _WIN32
         cout << "Done! Please open a new terminal to load the custom env for ffmpeg-vm" << endl;
