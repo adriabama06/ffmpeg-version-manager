@@ -157,7 +157,7 @@ int run_tui()
         container,
         [&]
         {
-            return window(text("ffmpeg-version-manager v0.1.7"),
+            return window(text(std::string(PROGRAM_NAME) + " v" + std::string(PROGRAM_VERSION)),
                           hbox({
                               menus_component->Render() | borderEmpty | size(WIDTH, EQUAL, 15),
                               separator(),
