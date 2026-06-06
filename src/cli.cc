@@ -30,7 +30,7 @@ OPTIONS default_options()
 
 void print_help()
 {
-    cout << "ffmpeg-version-manager v0.1.7" << endl;
+    cout <<  PROGRAM_NAME << " v" << PROGRAM_VERSION << endl;
     cout << "Arguments:" << endl;
     cout << "   -h/--help              -> Print this screen." << endl;
     cout << "   -u/--uninstall         -> Uninstall the current ffmpeg-vm installed and the current env." << endl;

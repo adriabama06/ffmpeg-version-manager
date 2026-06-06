@@ -122,17 +122,13 @@ FetchContent_Declare(archive
 FetchContent_MakeAvailable(archive)
 # ---
 
-add_executable(ffmpeg-version-manager
-  src/main.cc
-  src/request.cc
-  src/environment.cc
-  src/ui_elements.cc
-  src/cli.cc
-  src/tui.cc
-  src/curl_tools.cc
-  src/env_settings.linux.cc
-  src/env_settings.windows.cc
-  src/compress.cc
+
+file(GLOB FVM_SOURCES "src/*.cc")
+add_executable(ffmpeg-version-manager ${FVM_SOURCES})
+
+target_compile_definitions(ffmpeg-version-manager
+  PRIVATE PROGRAM_VERSION="${PROJECT_VERSION}"
+  PRIVATE PROGRAM_NAME="${PROJECT_NAME}"
 )
 
 target_include_directories(ffmpeg-version-manager
