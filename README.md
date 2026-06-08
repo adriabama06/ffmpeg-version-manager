@@ -59,4 +59,4 @@ This project uses the following libraries:
 - [libarchive](https://github.com/libarchive/libarchive.git)
 
 And the builds from:
-- https://github.com/BtbN/FFmpeg-Builds/releases
+- https://github.com/BtbN/FFmpeg-Builds/releases stored in https://github.com/adriabama06/FFmpeg-Builds-Archive
