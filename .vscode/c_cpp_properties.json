@@ -8,7 +8,10 @@
                 "${workspaceFolder}/build/_deps/nlohmann_json-src/include",
                 "${workspaceFolder}/build/_deps/curl-src/include"
             ],
-            "defines": [],
+            "defines": [
+                "PROGRAM_NAME=\"${workspaceFolder}\"",
+                "PROGRAM_VERSION=\"x.x.x\""
+            ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
             "cppStandard": "c++17",

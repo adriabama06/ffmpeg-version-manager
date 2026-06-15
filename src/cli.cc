@@ -10,23 +10,15 @@
 #include "request.hh"
 #include "curl_tools.hh"
 #include "compress.hh"
+#include "ffmpeg-vm.hh"
 
 using namespace std;
 
 typedef struct OPTIONS_S {
-    bool install;
-    string install_arg;
-    bool uninstall;
+    bool install = false;
+    string install_arg = "";
+    bool uninstall = false;
 } OPTIONS;
-
-OPTIONS default_options()
-{
-    return OPTIONS{
-        install: false,
-        install_arg: "",
-        uninstall: false
-    };
-}
 
 void print_help()
 {
@@ -47,25 +39,10 @@ void print_help()
     cout << endl;
     cout << "Thanks for using my program ;D - https://github.com/adriabama06/ffmpeg-version-manager" << endl;
 }
+
 void print_list()
 {
-    string FFMPEGVM_CURRENT_VERSION;
-
-    {
-        filesystem::path ffmpeg_vm_dir = get_ffmpeg_vm_dir();
-
-        ifstream version_file(ffmpeg_vm_dir / "VERSION");
-        if (version_file.is_open()) {
-            string content((istreambuf_iterator<char>(version_file)), istreambuf_iterator<char>());
-            version_file.close();
-
-            for (size_t i = 0; i < content.length(); i++)
-            {
-                if(content[i] == '\n') break;
-                FFMPEGVM_CURRENT_VERSION.push_back(content[i]);
-            }
-        }
-    }
+    string FFMPEGVM_CURRENT_VERSION = get_current_version();
 
     cout << "Fetching versions from '" << (getenv("FFMPEGVM_URL") != NULL ? getenv("FFMPEGVM_URL") : FFMPEGVM_URL) << "'..." << endl;
 
@@ -84,7 +61,7 @@ void print_list()
 
 int run_cli(int argc, char *argv[])
 {
-    OPTIONS options = default_options();
+    OPTIONS options;
 
     for (int i = 1; i < argc; ++i) {
         string arg = string(argv[i]);
