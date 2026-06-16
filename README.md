@@ -1,3 +1,5 @@
+Hiiii!!! I don't know what else to add besides supporting other Linux environments and maybe Mac, and finally adding support for Windows ARM64. Open an issue here: https://github.com/adriabama06/ffmpeg-version-manager/issues to share ideas ;D
+
 # FFmpeg Version Manager
 
 A command-line tool to manage multiple versions of FFmpeg, enabling seamless switching between different versions for development and testing.
