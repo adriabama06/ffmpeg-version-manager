@@ -34,6 +34,15 @@ jobs:
           chmod +x ./build_windows.sh
           ./build_windows.sh
 
+      - name: Compress binaries with UPX
+        uses: crazy-max/ghaction-upx@v4
+        with:
+          version: latest
+          files: |
+            ffmpeg-version-manager
+            ffmpeg-version-manager.exe
+          args: --best --lzma
+
       - name: Upload Linux build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -67,6 +76,14 @@ jobs:
         run: |
           chmod +x ./build_linux.sh
           ./build_linux.sh
+
+      - name: Compress binary with UPX
+        uses: crazy-max/ghaction-upx@v4
+        with:
+          version: latest
+          files: |
+            ffmpeg-version-manager
+          args: --best --lzma
 
       - name: Rename file
         run: |
@@ -119,6 +136,13 @@ jobs:
         run: |
           chmod +x ./build_windows.sh
           ./build_windows.sh
+
+      - name: Compress binary with UPX
+        shell: msys2 {0}
+        run: |
+          curl -L -o upx.zip https://github.com/upx/upx/releases/download/v5.2.0/upx-5.2.0-win64.zip
+          unzip upx.zip
+          ./upx-5.2.0-win64/upx.exe --best --lzma ffmpeg-version-manager.exe
 
       - name: Rename file
         run: |
