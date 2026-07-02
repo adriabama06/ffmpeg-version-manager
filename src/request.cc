@@ -106,7 +106,7 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
         if(url.empty())
             continue;
 
-        raw_list.push_back(FFMPEG_VERSION{version : key, url : url});
+        raw_list.push_back(FFMPEG_VERSION{.version = key, .url = url});
     }
 
     // versions.items() & raw_list is sorted, so to reverse start from the end
