@@ -135,8 +135,8 @@ jobs:
       - name: Build for Windows (arm64) inside MSYS2
         shell: msys2 {0}
         run: |
-          chmod +x ./build_windows.sh
-          ./build_windows.sh
+          chmod +x ./build_windows_arm64.sh
+          ./build_windows_arm64.sh
 
       - name: Compress binary with UPX
         shell: msys2 {0}
