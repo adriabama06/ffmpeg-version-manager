@@ -2,6 +2,7 @@
 
 # Configure with CMake - no cross-compile toolchain needed (native Windows ARM64 build)
 cmake -B build-windows \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_SHARED_LIBS=OFF \
   -DBUILD_CURL_EXE=OFF \
