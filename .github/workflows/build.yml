@@ -120,6 +120,7 @@ jobs:
             pkgconf
             nasm
             yasm
+            mingw-w64-clang-aarch64-cmake
             mingw-w64-clang-aarch64-toolchain
 
       - name: Show MSYS2 environment
