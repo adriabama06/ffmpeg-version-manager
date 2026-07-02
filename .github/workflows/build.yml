@@ -138,12 +138,12 @@ jobs:
           chmod +x ./build_windows_arm64.sh
           ./build_windows_arm64.sh
 
-      - name: Compress binary with UPX
-        shell: msys2 {0}
-        run: |
-          curl -L -o upx.zip https://github.com/upx/upx/releases/download/v5.2.0/upx-5.2.0-win64.zip
-          powershell -command "Expand-Archive -Path upx.zip -DestinationPath ."
-          ./upx-5.2.0-win64/upx.exe --best --lzma ffmpeg-version-manager.exe
+      # - name: Compress binary with UPX
+      #   shell: msys2 {0}
+      #   run: |
+      #     curl -L -o upx.zip https://github.com/upx/upx/releases/download/v5.2.0/upx-5.2.0-win64.zip
+      #     powershell -command "Expand-Archive -Path upx.zip -DestinationPath ."
+      #     ./upx-5.2.0-win64/upx.exe --best --lzma ffmpeg-version-manager.exe
 
       - name: Rename file
         run: |
