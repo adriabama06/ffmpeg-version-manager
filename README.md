@@ -1,4 +1,7 @@
-Hiiii!!! I don't know what else to add besides supporting other Linux environments and maybe Mac, and finally adding support for Windows ARM64. Open an issue here: https://github.com/adriabama06/ffmpeg-version-manager/issues to share ideas ;D
+TODO (Not necessarily in order):
+- [ ] You helping ;D https://github.com/adriabama06/ffmpeg-version-manager/issues
+- [ ] Support other envs that not are bash, like fish or zsh
+- [ ] Support Mac
 
 # FFmpeg Version Manager
 
