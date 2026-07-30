@@ -1,3 +1,5 @@
+If it seems like the project is dead, it's not. I'm simply working on a branch, or if I'm not adding code, I'm still maintaining https://github.com/adriabama06/FFmpeg-Builds-Archive where I add new Ffmpeg builds.  
+
 TODO (Not necessarily in order):
 - [ ] You helping ;D https://github.com/adriabama06/ffmpeg-version-manager/issues
 - [ ] Support other envs that not are bash, like fish or zsh
