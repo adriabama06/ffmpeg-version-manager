@@ -58,7 +58,7 @@ int os_setup_env(std::string version, std::filesystem::path ffmpeg_vm_dir, const
     return 0;
 }
 
-int os_remove_env(std::filesystem::path ffmpeg_vm_dir, const char* home)
+int os_remove_env([[maybe_unused]] /* Required by windows, to keep a generic function */ std::filesystem::path ffmpeg_vm_dir, const char* home)
 {
     fs::path bashrc_path = fs::path(home) / ".bashrc";
     std::ifstream bashrc_in(bashrc_path);

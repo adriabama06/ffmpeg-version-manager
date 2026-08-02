@@ -39,7 +39,7 @@ std::string generate_slider(float percent)
 {
     int i;
     int max = 50;
-    int middle = max * percent;
+    int middle = static_cast<int>(static_cast<float>(max) * percent);
     
     std::string sl = "[";
 
@@ -63,7 +63,7 @@ std::string center_text(std::string str)
     int max = 50;
     int middle = max / 2;
 
-    int len = str.length();
+    int len = static_cast<int>(str.length());
 
     std::string cent = "";
 

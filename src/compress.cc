@@ -139,7 +139,7 @@ int extract_from_memory_to_folder(const std::string &filedata, const std::filesy
         // Read the blocks and write it
         while ((result = archive_read_data_block(archiv, &buff, &size, &offset)) == ARCHIVE_OK)
         {
-            outfile.write(static_cast<const char *>(buff), size);
+            outfile.write(static_cast<const char *>(buff), static_cast<std::streamsize>(size));
         }
 
         if (result != ARCHIVE_EOF)

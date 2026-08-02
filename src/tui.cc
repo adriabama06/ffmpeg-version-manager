@@ -118,7 +118,7 @@ void uninstall_workflow(std::vector<std::string>& display_versions, const std::v
 
 void download_workflow(int version_selected, const std::vector<FFMPEG_VERSION>& versions, std::string& current_version, std::vector<std::string>& display_versions)
 {
-    FFMPEG_VERSION version = versions[version_selected];
+    FFMPEG_VERSION version = versions[static_cast<size_t>(version_selected)];
 
     current_version = version.version;
 

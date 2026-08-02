@@ -9,6 +9,9 @@ TODO (Not necessarily in order):
 
 A command-line tool to manage multiple versions of FFmpeg, enabling seamless switching between different versions for development and testing.
 
+## Download
+Downloads are available at [releases](https://github.com/adriabama06/ffmpeg-version-manager/releases) page.
+
 ## Features
 
 - Switch between pre-defined FFmpeg versions

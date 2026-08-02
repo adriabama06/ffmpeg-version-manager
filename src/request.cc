@@ -41,18 +41,14 @@ typedef struct PROGRESSDATA_S {
     ftxui::ScreenInteractive* screen;
 } PROGRESSDATA;
 
-// Callback function to write curl response to a string
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *response)
-{
-    size_t totalSize = size * nmemb;
-    response->append((char*)contents, totalSize);
-    return totalSize;
-}
-
 // https://github.com/dryark/minibrew_deploy/blob/main/curlprog.m#L31
 float last_progress = 0;
 
 static int DownloadCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+    // Skip warn unused
+    (void)ultotal;
+    (void)ulnow;
+
     PROGRESSDATA* data = reinterpret_cast<PROGRESSDATA*>(clientp);
 
     ftxui::Element* display_slider = data->display_slider;
@@ -106,7 +102,7 @@ vector<FFMPEG_VERSION> get_ffmpeg_versions()
         if(url.empty())
             continue;
 
-        raw_list.push_back(FFMPEG_VERSION{.version = key, .url = url});
+        raw_list.push_back(FFMPEG_VERSION{key, url});
     }
 
     // versions.items() & raw_list is sorted, so to reverse start from the end
