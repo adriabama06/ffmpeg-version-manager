@@ -1,6 +1,15 @@
 #ifndef CLI_H
 #define CLI_H
 
-int run_cli(int argc, char *argv[]);
+enum CLI_EXIT_STATUS {
+    OK = 0,
+    UNKNONW_OPTION,
+    NO_ARGUMENT,
+    NO_VERSIONS_TO_INSTALL,
+    ERROR_DOWNLOADING,
+    ERROR_EXTRACTING
+};
+
+CLI_EXIT_STATUS run_cli(int argc, char *argv[]);
 
 #endif // CLI_H

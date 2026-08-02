@@ -26,7 +26,7 @@ void print_help()
     cout << "Arguments:" << endl;
     cout << "   -h/--help              -> Print this screen." << endl;
     cout << "   -u/--uninstall         -> Uninstall the current ffmpeg-vm installed and the current env." << endl;
-    cout << "   -i/--install <version> -> Install the version requested and creates the env." << endl;
+    cout << "   -i/--install <version> -> Install the version requested and creates the env. Also you can pass \"latest\" and it will automatically pick the last build for your os." << endl;
     cout << "   -l/--list              -> Display the versions availables for your platform." << endl;
     cout << endl;
     cout << "Environment variables:" << endl;
@@ -59,7 +59,7 @@ void print_list()
     }
 }
 
-int run_cli(int argc, char *argv[])
+CLI_EXIT_STATUS run_cli(int argc, char *argv[])
 {
     OPTIONS options;
 
@@ -68,12 +68,12 @@ int run_cli(int argc, char *argv[])
 
         if (arg == "-h" || arg == "--help") {
             print_help();
-            return 0;
+            return CLI_EXIT_STATUS::OK;
         }
         else if (arg == "-i" || arg == "--install") {
             if (i + 1 >= argc) {
                 std::cerr << "Error: missing <version> argument for " << arg << "\n";
-                return 1;
+                return CLI_EXIT_STATUS::NO_ARGUMENT;
             }
             string version = argv[++i];
             options.install = true;
@@ -84,11 +84,11 @@ int run_cli(int argc, char *argv[])
         }
         else if (arg == "-l" || arg == "--list") {
             print_list();
-            return 0;
+            return CLI_EXIT_STATUS::OK;
         }
         else {
             std::cerr << "Unknown option: " << arg << "\n";
-            return 1;
+            return CLI_EXIT_STATUS::UNKNONW_OPTION;
         }
     }
 
@@ -107,6 +107,13 @@ int run_cli(int argc, char *argv[])
 
         cout << versions.size() << " loaded for this platform" << endl;
 
+        if(versions.size() == 0)
+        {
+            cout << "Wait, what? On what platform are you?? There are 0 versions for you???" << endl;
+            cout << "Sorry, but I'm quitting..." << endl;
+            return CLI_EXIT_STATUS::NO_VERSIONS_TO_INSTALL;
+        }
+
         bool valid_version = false;
         FFMPEG_VERSION version;
 
@@ -120,11 +127,18 @@ int run_cli(int argc, char *argv[])
             }
         }
         
+        if(options.install_arg == "latest")
+        {
+            valid_version = true;
+
+            version = versions[0];
+        }
+
         if(!valid_version)
         {
             cout << "The version " << options.install_arg << " is not available for your platform" << endl;
 
-            return 1;
+            return CLI_EXIT_STATUS::NO_VERSIONS_TO_INSTALL;
         }
 
         remove_env();
@@ -140,7 +154,7 @@ int run_cli(int argc, char *argv[])
         if(status != 0)
         {
             cout << "Error on download the file" << endl;
-            return 2;
+            return CLI_EXIT_STATUS::ERROR_DOWNLOADING;
         }
 
         cout << "Extracting files..." << endl;
@@ -149,7 +163,7 @@ int run_cli(int argc, char *argv[])
         if(status != 0)
         {
             cout << "Error on extracting the file" << endl;
-            return 3;
+            return CLI_EXIT_STATUS::ERROR_EXTRACTING;
         }
 
 #ifdef _WIN32
@@ -159,5 +173,5 @@ int run_cli(int argc, char *argv[])
 #endif
     }
 
-    return 0;
+    return CLI_EXIT_STATUS::OK;
 }

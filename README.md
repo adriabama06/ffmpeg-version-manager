@@ -53,6 +53,9 @@ Contributions are welcome! Open an issue or submit a pull request.
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 
+## Why in C++ and not in Go/Rust/Python/...
+It's written in C++ because I wanted to practice C++ and also wanted to try writing a complete program in C++. I'm trying out several programming languages; it's good to focus on one, but you also need to be proficient with others.
+
 ## Thanks
 
 This project uses the following libraries:
