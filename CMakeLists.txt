@@ -129,6 +129,11 @@ add_executable(ffmpeg-version-manager ${FVM_SOURCES})
 # --- Strict build settings (only for non-MSVC, applied only to this target, not dependencies) ----
 if(NOT MSVC)
     target_compile_options(ffmpeg-version-manager PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Werror)
+    # Clang flags -static-libgcc/-static-libstdc++ (passed by the build scripts) as unused,
+    # which -Werror would otherwise turn into an error.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        target_compile_options(ffmpeg-version-manager PRIVATE -Wno-unused-command-line-argument)
+    endif()
 endif()
 # ------------------------------------------------------------------------------
 
