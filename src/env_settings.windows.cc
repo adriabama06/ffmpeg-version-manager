@@ -44,7 +44,7 @@ static LONG set_registry_key(HKEY root_key, const std::string& sub_key, const st
     if (lResult != ERROR_SUCCESS) return lResult;
 
     lResult = RegSetValueExA(hKey, value_name.c_str(), 0, REG_EXPAND_SZ,
-                             (const BYTE*)value.c_str(), value.length() + 1);
+                             (const BYTE*)value.c_str(), static_cast<DWORD>(value.length() + 1));
 
     RegCloseKey(hKey);
     return lResult;
@@ -123,7 +123,7 @@ int delete_windows_path(const fs::path& ffmpeg_vm_dir)
     return 0;
 }
 
-int os_setup_env(std::string version, std::filesystem::path ffmpeg_vm_dir, const char* home)
+int os_setup_env(std::string version, std::filesystem::path ffmpeg_vm_dir, [[maybe_unused]] const char* home)
 {
     int status = set_windows_path(ffmpeg_vm_dir);
 
@@ -140,7 +140,7 @@ int os_setup_env(std::string version, std::filesystem::path ffmpeg_vm_dir, const
     return status;
 }
 
-int os_remove_env(std::filesystem::path ffmpeg_vm_dir, const char* home)
+int os_remove_env(std::filesystem::path ffmpeg_vm_dir, [[maybe_unused]] const char* home)
 {
     return delete_windows_path(ffmpeg_vm_dir);
 }

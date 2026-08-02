@@ -31,7 +31,7 @@ void print_help()
     cout << endl;
     cout << "Environment variables:" << endl;
 #ifdef _WIN32
-    cout << "   - FFMPEGVM_PATH        -> Change where ffmpeg is installed, by default is installed in \%USERPROFILE\%\\ffmpeg-vm" << endl;
+    cout << "   - FFMPEGVM_PATH        -> Change where ffmpeg is installed, by default is installed in %%USERPROFILE%%\\ffmpeg-vm" << endl;
 #else
     cout << "   - FFMPEGVM_PATH        -> Change where ffmpeg is installed, by default is installed in $HOME/ffmpeg-vm" << endl;
 #endif
