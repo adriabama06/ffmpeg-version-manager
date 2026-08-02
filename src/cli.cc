@@ -126,7 +126,7 @@ CLI_EXIT_STATUS run_cli(int argc, char *argv[])
                 break;
             }
         }
-        
+
         if(options.install_arg == "latest")
         {
             string FFMPEGVM_CURRENT_VERSION = get_current_version();
@@ -139,6 +139,20 @@ CLI_EXIT_STATUS run_cli(int argc, char *argv[])
             {
                 cout << "Your current version already is: " << version.version << endl;
                 return CLI_EXIT_STATUS::ALREADY_INSTALLED;
+            }
+        }
+
+        if(!valid_version)
+        {
+            for (const FFMPEG_VERSION& ver : versions)
+            {
+                // Check if the current versions starts with
+                if(ver.version.rfind(options.install_arg) == 0)
+                {
+                    version = ver;
+                    valid_version = true;
+                    break;
+                }
             }
         }
 
