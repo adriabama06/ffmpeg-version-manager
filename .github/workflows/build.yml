@@ -19,6 +19,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps
+            build-windows/_deps
+          key: ${{ runner.os }}-${{ runner.arch }}-deps-${{ hashFiles('CMakeLists.txt', 'build_linux.sh', 'build_windows.sh', 'toolchain-windows.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-deps-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -61,6 +71,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: ${{ runner.os }}-${{ runner.arch }}-deps-${{ hashFiles('CMakeLists.txt', 'build_linux.sh', 'toolchain-windows.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-deps-
 
       - name: Show environment
         run: |
@@ -107,6 +125,14 @@ jobs:
         run: |
           systeminfo
         shell: pwsh
+
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: build-windows/_deps
+          key: ${{ runner.os }}-${{ runner.arch }}-deps-${{ hashFiles('CMakeLists.txt', 'build_windows_arm64.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-deps-
 
       - name: Setup MSYS2 and install toolchain/packages (ARM64)
         uses: msys2/setup-msys2@v2
