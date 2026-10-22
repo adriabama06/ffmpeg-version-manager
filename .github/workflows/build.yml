@@ -129,7 +129,10 @@ jobs:
       - name: Cache CMake dependencies
         uses: actions/cache@v4
         with:
-          path: build-windows/_deps
+          path: |
+            build-windows/_deps
+            build-windows/.ninja_deps
+            build-windows/.ninja_log
           key: ${{ runner.os }}-${{ runner.arch }}-deps-${{ hashFiles('CMakeLists.txt', 'build_windows_arm64.sh') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-deps-
