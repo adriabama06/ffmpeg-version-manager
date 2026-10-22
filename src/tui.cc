@@ -59,16 +59,32 @@ int run_tui()
 
     int version_selected = 0;
 
+    std::string uninstall_label;
+    auto update_uninstall_label = [&] {
+        uninstall_label = FFMPEGVM_CURRENT_VERSION.empty()
+            ? "I could not find any ffmpeg version to uninstall (press enter to try to uninstall anyways)"
+            : ("ffmpeg " + FFMPEGVM_CURRENT_VERSION + " installed, press enter to uninstall");
+    };
+    update_uninstall_label();
+
     MenuOption version_selector_options;
-    version_selector_options.on_enter = [&] { download_workflow(version_selected, versions, FFMPEGVM_CURRENT_VERSION, display_versions); };
+    version_selector_options.on_enter = [&] {
+        download_workflow(version_selected, versions, FFMPEGVM_CURRENT_VERSION, display_versions);
+        update_uninstall_label();
+        screen.PostEvent(Event::Custom);
+    };
 
     ftxui::Component version_selector_component = Menu(&display_versions, &version_selected, version_selector_options);
 
     ftxui::Component list_container_component = Container::Tab(
         {
-            version_selector_component | vscroll_indicator | frame | size(HEIGHT, LESS_THAN, 10),
-            Button("Let's uninstall", [&] { uninstall_workflow(display_versions, versions, FFMPEGVM_CURRENT_VERSION); }, ButtonOption::Ascii()),
-            Button("Ok, exit", screen.ExitLoopClosure(), ButtonOption::Ascii())
+            version_selector_component | vscroll_indicator | frame | flex | size(WIDTH, GREATER_THAN, 10) /* size(HEIGHT, LESS_THAN, 10) for limited size */,
+            Button(&uninstall_label, [&] {
+                uninstall_workflow(display_versions, versions, FFMPEGVM_CURRENT_VERSION);
+                update_uninstall_label();
+                screen.PostEvent(Event::Custom);
+            }, ButtonOption::Ascii()),
+            Button("Press enter to exit", screen.ExitLoopClosure(), ButtonOption::Ascii())
         },
         &menu_selected
     );
@@ -114,6 +130,7 @@ void uninstall_workflow(std::vector<std::string>& display_versions, const std::v
     current_version.clear();
     generate_display_versions(display_versions, versions, current_version);
     display_alert(text("Uninstall complete!"), std::chrono::seconds(2));
+    current_version = "";
 }
 
 void download_workflow(int version_selected, const std::vector<FFMPEG_VERSION>& versions, std::string& current_version, std::vector<std::string>& display_versions)
